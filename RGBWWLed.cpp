@@ -23,6 +23,7 @@ RGBWWLed::RGBWWLed() {
 	_current_color = HSVK(0, 0, 0);
     _currentAnimation = NULL;
     _hsvmode = HSV_MODE_NORMAL;
+    _animationQ = RGBWWLedAnimationQ(ANIMATIONQSIZE);
     createHueWheel();
 	correctMaxBrightness(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
 
@@ -225,15 +226,14 @@ bool RGBWWLed::show() {
 
     // check if we need to cancel effect
     if (_cancelAnimation || _clearAnimationQueue) {
-        //TODO empty the whole queue here
-        if (_currentAnimation != NULL) {
-            delete _currentAnimation;
-            _currentAnimation = NULL;
-        }
-        _isAnimationActive = false;
+
+        cleanupCurrentAnimation();
         _cancelAnimation = false;
+
+        // cleanup Q if we cancel all effects
         if (_clearAnimationQueue) {
-            //TODO: clear Animation Queue
+
+            clearAnimationQ();
             _clearAnimationQueue = false;
         }
     }
@@ -245,21 +245,21 @@ bool RGBWWLed::show() {
     }
     #endif // ESP8266
     last_active = now;
-
+    // Interval has passed
     // check if we need to animate or there is any new animation
     if (!_isAnimationActive) {
         //check if animation otherwise return true
-        return true;
+        if (_animationQ.isEmpty()) {
+            return true;
+        }
+        _currentAnimation = _animationQ.pop();
+        _isAnimationActive = true;
     }
-    // Interval has passed - run animation
+
 
     if (_currentAnimation->run()) {
         DEBUG("finished animation");
-        if (_currentAnimation != NULL) {
-                delete _currentAnimation;
-                _currentAnimation = NULL;
-            }
-        _isAnimationActive = false;
+        cleanupCurrentAnimation();
     }
 
     return false;
@@ -280,43 +280,68 @@ void    RGBWWLed::clearAnimationQueue() {
 
 
 void RGBWWLed::setHSV(HSVK& color) {
-    setHSV( color, 0);
+    setHSV( color, 0, 1, false);
+}
+
+void RGBWWLed::setHSV(HSVK& color, int time, bool q) {
+    setHSV( color, time, 1, q);
 }
 
 
-void RGBWWLed::setHSV(HSVK& color, int tm, bool shortDirection) {
+void RGBWWLed::setHSV(HSVK& color, int time, int direction) {
     // get current value and then move forward
-    setHSV( _current_color, color, tm, shortDirection);
+    setHSV( color, time, direction, false);
 }
 
+void RGBWWLed::setHSV(HSVK& color, int time, int direction, bool q) {
+    setHSV( _current_color, color, time, direction, q);
+}
 
-void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int tm, bool shortDirection ) {
+void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction, bool q ) {
     // only change color if it is different
     if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  ) {
-        if (tm == 0 || tm < MINTIMEDIFF) {
+        if (time == 0 || time < MINTIMEDIFF) {
             // no transition time - directly set the color
             setOutput(color);
         } else {
             // Fix fading from off to on with different HUE
             //colorFrom.h = (colorFrom.v == 0 && color.h != colorFrom.h) ? color.h : colorFrom.h;
+            if (q) {
+                // using queue
+                _animationQ.push(new HSVTransition(colorFrom, color, time, direction, this));
 
-            //TODO: check if there has been another animation
-            //TODO: animation Q - how to implement
-            if (_currentAnimation != NULL) {
-                _isAnimationActive = false;
-                delete _currentAnimation;
-                _currentAnimation = NULL;
+            } else {
+
+                // not using queue up -> clear the queue first
+                clearAnimationQ();
+                // clear any running animation
+                cleanupCurrentAnimation();
+                _currentAnimation = new HSVTransition(colorFrom, color, time, direction, this);
+                _isAnimationActive = true;
             }
-            _currentAnimation = new HSVTransition( colorFrom, color, tm, shortDirection, this);
-            //_currentAnimation->run();
-            _isAnimationActive = true;
+
         }
     }
 
 }
 
+void RGBWWLed::cleanupCurrentAnimation() {
+    if (_currentAnimation != NULL) {
+        _isAnimationActive = false;
+        delete _currentAnimation;
+        _currentAnimation = NULL;
+    }
+}
+
+void RGBWWLed::clearAnimationQ() {
+    while(!_animationQ.isEmpty()) {
+        RGBWWLedAnimation* animation = _animationQ.pop();
+        delete animation;
+    }
+}
+
 /**************************************************************
-                COLORUTILS
+                    COLORUTILS
 **************************************************************/
 
 

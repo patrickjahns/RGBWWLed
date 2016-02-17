@@ -36,6 +36,7 @@
 #define UPDATEFREQUENCY 50
 #define MINTIMEDIFF  int(1000 / UPDATEFREQUENCY)
 #define PWMFREQUENCY 200
+#define ANIMATIONQSIZE 30
 
 
 class RGBWWLed
@@ -57,8 +58,10 @@ class RGBWWLed
 
         //animation related
         void    setHSV(HSVK& color);
-        void    setHSV(HSVK& color, int time, bool shortDirection=true);
-        void    setHSV(HSVK& colorFrom, HSVK& color, int time, bool shortDirection=true);
+        void    setHSV(HSVK& color, int time, int direction);
+        void    setHSV(HSVK& color, int time, bool q);
+        void    setHSV(HSVK& color, int time, int direction, bool q);
+        void    setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
         void    skipAnimation();
         void    clearAnimationQueue();
 
@@ -98,9 +101,12 @@ class RGBWWLed
         unsigned long   last_active;
 
         RGBWWLedAnimation*  _currentAnimation;
+        RGBWWLedAnimationQ  _animationQ;
 
         //helpers
         void    createHueWheel();
+        void    cleanupCurrentAnimation();
+        void    clearAnimationQ();
 
 };
 

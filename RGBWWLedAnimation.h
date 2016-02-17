@@ -8,9 +8,29 @@
 #ifndef RGBWWLedAnimation_h
 #define RGBWWLedAnimation_h
 #include "RGBWWLedColor.h"
-
+#include <queue>
+#include <vector>
 
 class RGBWWLed;
+class RGBWWLedAnimation;
+
+class RGBWWLedAnimationQ
+{
+    public:
+        RGBWWLedAnimationQ() {};
+        RGBWWLedAnimationQ(int qsize);
+        bool                isEmpty();
+        bool                isFull();
+        bool                push(RGBWWLedAnimation* animation);
+        RGBWWLedAnimation*  peek();
+        RGBWWLedAnimation*  pop();
+
+
+    private:
+        int _size, _count;
+        std::queue<RGBWWLedAnimation*>  q;
+
+};
 
 class RGBWWLedAnimation
 {
@@ -24,7 +44,7 @@ class HSVTransition: public RGBWWLedAnimation
 {
     public:
         HSVTransition() {};
-        HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const bool& shortDirection, RGBWWLed* rgbled);
+        HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const int& direction, RGBWWLed* rgbled);
         bool        run();
         bool        run(int st);
 

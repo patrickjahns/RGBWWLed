@@ -2,13 +2,58 @@
 #include "RGBWWLedColor.h"
 #include "RGBWWLed.h"
 
+
+
 #ifndef ESP8266
     #include "compat.h"
     #include <stdlib.h>
 #endif // ESP8266
 
-HSVTransition::HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const bool& shortDirection, RGBWWLed* led ) {
-    int l, r, direction;
+RGBWWLedAnimationQ::RGBWWLedAnimationQ(int qsize) {
+    _size = qsize;
+    _count = 0;
+
+}
+
+bool RGBWWLedAnimationQ::isEmpty() {
+    return _count == 0;
+}
+
+bool RGBWWLedAnimationQ::isFull() {
+    return _count == _size;
+}
+
+bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
+    if (!isFull()){
+        //
+        _count++;
+        q.push(animation);
+        return true;
+    }
+    return false;
+}
+
+RGBWWLedAnimation* RGBWWLedAnimationQ::peek() {
+    if (!isEmpty()) {
+        return q.front();
+    }
+    return NULL;
+}
+
+RGBWWLedAnimation* RGBWWLedAnimationQ::pop() {
+    RGBWWLedAnimation* tmpptr;
+    if (!isEmpty()) {
+        _count--;
+        tmpptr = q.front();
+        q.pop();
+        return tmpptr;
+    }
+    return NULL;
+}
+
+
+HSVTransition::HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const int& direction, RGBWWLed* led ) {
+    int l, r, d;
 
     rgbled = led;
     DEBUG("== HSVT Constructor =======");
@@ -19,10 +64,10 @@ HSVTransition::HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const bo
     l = (colorFrom.h + PWMHUEWHEELMAX - color.h) % PWMHUEWHEELMAX;
     r = (color.h + PWMHUEWHEELMAX - colorFrom.h) % PWMHUEWHEELMAX;
     // decide on direction of turn depending on size
-    direction = (l < r)? -1 : 1;
+    d = (l < r)? -1 : 1;
 
     // turn direction if user wishes for long transition
-    direction = (shortDirection) ? direction : -1*direction;
+    d = (direction == 1) ? d : d *= -1;
 
     //calculate steps per time
     _steps = tm / MINTIMEDIFF;
@@ -30,7 +75,7 @@ HSVTransition::HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const bo
     _currentstep = 0;
 
     //HUE
-    _dhue = (direction == -1) ? l : r;
+    _dhue = (d == -1) ? l : r;
     _huestep = 1;
     _huestep = (_dhue < _steps) ? (_huestep <<8) : (_dhue << 8)/_steps;
     _huestep *= direction;
