@@ -24,14 +24,14 @@ class HSVTransition: public RGBWWLedAnimation
 {
     public:
         HSVTransition() {};
-        HSVTransition(HSV colorFrom, HSV color, const int& tm, const bool& shortDirection, RGBWWLed* rgbled);
+        HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const bool& shortDirection, RGBWWLed* rgbled);
         bool        run();
         bool        run(int st);
 
     private:
-        HSV         _basecolor;
-        HSV         _currentcolor;
-        HSV         _finalcolor;
+        HSVK         _basecolor;
+        HSVK         _currentcolor;
+        HSVK         _finalcolor;
         int         _currentstep;
         int         _steps;
         int         _dhue;

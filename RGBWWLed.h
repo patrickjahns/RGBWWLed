@@ -46,21 +46,21 @@ class RGBWWLed
 
         //output related
         bool    show();
-        void    setOutput(HSV color);
-        void    setOutput(RGBW color);
+        void    setOutput(HSVK color);
+        void    setOutput(RGBWK color);
         void    setOutputRaw(int red, int green, int blue, int cwhite, int wwhite);
 
         //animation related
-        void    setHSV(HSV& color);
-        void    setHSV(HSV& color, int time, bool shortDirection=true);
-        void    setHSV(HSV& colorFrom, HSV& color, int time, bool shortDirection=true);
+        void    setHSV(HSVK& color);
+        void    setHSV(HSVK& color, int time, bool shortDirection=true);
+        void    setHSV(HSVK& colorFrom, HSVK& color, int time, bool shortDirection=true);
         void    skipAnimation();
         void    clearAnimationQueue();
 
 
         //colorutils
-        void    HSVtoRGB(const HSV& hsv, RGBW& rgbw);
-        void    RGBtoHSV(const RGBW& rgbw, HSV& hsv);
+        void    HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
+        void    RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
 
         //helpers
         int     parseHue(float hue);
@@ -84,7 +84,7 @@ class RGBWWLed
         bool            _clearAnimationQueue;
         bool            _isAnimationActive;
 
-        HSV             _current_color;
+        HSVK             _current_color;
         unsigned long   last_active;
 
         RGBWWLedAnimation*  _currentAnimation;

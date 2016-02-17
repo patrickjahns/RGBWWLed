@@ -20,7 +20,7 @@ RGBWWLed::RGBWWLed() {
     _cancelAnimation = false;
     _clearAnimationQueue = false;
 	_colormode = MODE_RGB;
-	_current_color = HSV(0, 0, 0);
+	_current_color = HSVK(0, 0, 0);
     _currentAnimation = NULL;
     createHueWheel();
 	correctMaxBrightness(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
@@ -169,15 +169,15 @@ void RGBWWLed::correctHSV(float red, float yellow, float green, float cyan, floa
                     OUTPUT
 **************************************************************/
 
-void RGBWWLed::setOutput(HSV color) {
-    RGBW rgbw;
+void RGBWWLed::setOutput(HSVK color) {
+    RGBWK rgbw;
     _current_color = color;
     HSVtoRGB(color, rgbw);
     setOutput(rgbw);
 
 }
 
-void RGBWWLed::setOutput(RGBW c) {
+void RGBWWLed::setOutput(RGBWK c) {
     int color[5];
     //TODO white correction
     color[0] = c.r;
@@ -278,18 +278,18 @@ void    RGBWWLed::clearAnimationQueue() {
 }
 
 
-void RGBWWLed::setHSV(HSV& color) {
+void RGBWWLed::setHSV(HSVK& color) {
     setHSV( color, 0);
 }
 
 
-void RGBWWLed::setHSV(HSV& color, int tm, bool shortDirection) {
+void RGBWWLed::setHSV(HSVK& color, int tm, bool shortDirection) {
     // get current value and then move forward
     setHSV( _current_color, color, tm, shortDirection);
 }
 
 
-void RGBWWLed::setHSV(HSV& colorFrom, HSV& color, int tm, bool shortDirection ) {
+void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int tm, bool shortDirection ) {
     // only change color if it is different
     if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  ) {
         if (tm == 0) {
@@ -322,7 +322,7 @@ void RGBWWLed::setHSV(HSV& colorFrom, HSV& color, int tm, bool shortDirection ) 
 
 */
 
-void RGBWWLed::HSVtoRGB(const HSV& hsv, RGBW& rgbw) {
+void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw) {
     int val, hue, sat, r, g, b, fract, chroma, m;
     //TODO: write unit test
 
@@ -332,6 +332,7 @@ void RGBWWLed::HSVtoRGB(const HSV& hsv, RGBW& rgbw) {
     //sat = PWMMAXVAL-dim_curve[PWMMAXVAL-sat];
     sat = hsv.s;
 
+    rgbw.k = hsv.k;
     DEBUG("==  HSV2RGB  ==");
     DEBUG("HUE ", hue);
     DEBUG("SAT ", sat);
@@ -461,7 +462,7 @@ void RGBWWLed::HSVtoRGB(const HSV& hsv, RGBW& rgbw) {
     DEBUG("==  //HSV2RGB  ==");
 }
 
-void  RGBWWLed::RGBtoHSV(const RGBW& rgbw, HSV& hsv) {
+void  RGBWWLed::RGBtoHSV(const RGBWK& rgbw, HSVK& hsv) {
     DEBUG("RGBtoHSV");
 
 };

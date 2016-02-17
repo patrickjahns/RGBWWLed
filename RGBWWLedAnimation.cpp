@@ -7,7 +7,7 @@
     #include <stdlib.h>
 #endif // ESP8266
 
-HSVTransition::HSVTransition(HSV colorFrom, HSV color, const int& tm, const bool& shortDirection, RGBWWLed* led ) {
+HSVTransition::HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const bool& shortDirection, RGBWWLed* led ) {
     int l, r, direction;
 
     rgbled = led;
@@ -50,13 +50,12 @@ HSVTransition::HSVTransition(HSV colorFrom, HSV color, const int& tm, const bool
     _valcount = 0;
 
     //KELVIN
-    /*
     _dkelvin = abs(colorFrom.k - color.k);
     _kelvinstep = (_dkelvin < _steps) ? int(1)<<8 : (_dkelvin << 8)/_steps;
     _kelvinstep = (colorFrom.k > color.k) ? _kelvinstep*=-1 : _kelvinstep;
     _kelvinerror = -1 * _steps;
     _kelvincount = 0;
-    */
+
     // setup colors
     _basecolor = colorFrom;
     _currentcolor = colorFrom;
@@ -110,8 +109,7 @@ bool HSVTransition::run () {
     rgbled->circleHue(_currentcolor.h);
     _currentcolor.s = bresenham(_saterror, _satcount, _steps, _dsat, _satstep, _basecolor.s, _currentcolor.s);
     _currentcolor.v = bresenham(_valerror, _valcount, _steps, _dval, _valstep, _basecolor.v, _currentcolor.v);
-
-    //_currentcolor.k = Hbresenham(_kelvinerror, _kelvincount, _steps, _dkelvin, _kelvinstep, _basecolor.k, _currentcolor.k);
+    _currentcolor.k = bresenham(_kelvinerror, _kelvincount, _steps, _dkelvin, _kelvinstep, _basecolor.k, _currentcolor.k);
 
 
 
