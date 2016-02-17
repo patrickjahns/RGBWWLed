@@ -8,9 +8,11 @@
 #ifndef RGBWWLedAnimation_h
 #define RGBWWLedAnimation_h
 #include "RGBWWLedColor.h"
+//Need to undefine max/min from arduino code to use queue library
+//TODO: find better implementation for this
+#undef max
+#undef min
 #include <queue>
-#include <vector>
-
 class RGBWWLed;
 class RGBWWLedAnimation;
 
