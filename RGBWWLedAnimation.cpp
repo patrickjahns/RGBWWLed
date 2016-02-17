@@ -26,32 +26,37 @@ HSVTransition::HSVTransition(HSVK colorFrom, HSVK color, const int& tm, const bo
 
     //calculate steps per time
     _steps = tm / MINTIMEDIFF;
+    _steps = (_steps > 0) ? _steps : int(1); //avoid 0 division
     _currentstep = 0;
 
     //HUE
     _dhue = (direction == -1) ? l : r;
-    _huestep = (_dhue < _steps) ? int(1)<<8 : (_dhue << 8)/_steps;
+    _huestep = 1;
+    _huestep = (_dhue < _steps) ? (_huestep <<8) : (_dhue << 8)/_steps;
     _huestep *= direction;
     _hueerror =  -1 * _steps;
     _huecount = 0;
 
     //SATURATION
     _dsat = abs(colorFrom.s - color.s);
-    _satstep = (_dsat < _steps) ? int(1)<<8 : (_dsat << 8)/_steps;
+    _satstep = 1;
+    _satstep = (_dsat < _steps) ? (_satstep << 8) : (_dsat << 8)/_steps;
     _satstep = (colorFrom.s > color.s) ? _satstep*=-1 : _satstep;
     _saterror = -1 * _steps;
     _satcount = 0;
 
     //VALUE
     _dval = abs(colorFrom.v - color.v);
-    _valstep = (_dval < _steps) ? int(1)<<8 : (_dval << 8)/_steps;
+    _valstep = 1;
+    _valstep = (_dval < _steps) ? (_valstep << 8) : (_dval << 8)/_steps;
     _valstep = (colorFrom.v > color.v) ? _valstep*=-1 : _valstep;
     _valerror = -1 * _steps;
     _valcount = 0;
 
     //KELVIN
     _dkelvin = abs(colorFrom.k - color.k);
-    _kelvinstep = (_dkelvin < _steps) ? int(1)<<8 : (_dkelvin << 8)/_steps;
+    _kelvinstep = 1;
+    _kelvinstep = (_dkelvin < _steps) ? (_kelvinstep << 8 ): (_dkelvin << 8)/_steps;
     _kelvinstep = (colorFrom.k > color.k) ? _kelvinstep*=-1 : _kelvinstep;
     _kelvinerror = -1 * _steps;
     _kelvincount = 0;

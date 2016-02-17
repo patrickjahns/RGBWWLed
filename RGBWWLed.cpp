@@ -292,7 +292,7 @@ void RGBWWLed::setHSV(HSVK& color, int tm, bool shortDirection) {
 void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int tm, bool shortDirection ) {
     // only change color if it is different
     if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  ) {
-        if (tm == 0) {
+        if (tm == 0 || tm < MINTIMEDIFF) {
             // no transition time - directly set the color
             setOutput(color);
         } else {
