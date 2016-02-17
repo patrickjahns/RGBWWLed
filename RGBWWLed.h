@@ -2,73 +2,91 @@
 
 
     @author Patrick Jahns
-    @version 0.1
+    @version 0.2
  **************************************************************/
 
 #ifndef RGBWWLed_h
 #define RGBWWLed_h
-
-
-
-#define USE_DEBUG
+//#define USE_DEBUG
 #include "debugUtils.h"
-
 #ifdef ESP8266
     #include <ESP8266WiFi.h>
-    #define PWMWIDTH 10
 #else
     #include "math.h"
-    #define PWMWIDTH 8
     #include <stdint.h>
+    #include "compat.h"
+    #include <stdlib.h>
+    #include <stddef.h>
 #endif
 
+#include "RGBWWLedColor.h"
+#include "RGBWWLedAnimation.h"
+//forward define led animation
 
-#define hueV 360
-#define satV 100
-#define valV 100
-#define RGB 0
-#define RGBW 1
-
+#define MODE_RGB 0
+#define MODE_RGBWW 1
+#define MODE_RGBCW 2
+#define MODE_RGBWWCW 3
 // Frequency of updates per second
-#define updateFrequency 100
+#define UPDATEFREQUENCY 50
+#define MINTIMEDIFF  int(1000 / UPDATEFREQUENCY)
+#define PWMFREQUENCY 200
+
+
 
 
 class RGBWWLed
 {
     public:
+        //init & settings
         RGBWWLed();
 
         void    setMode(int mode);
-        void    init(uint8_t redPIN, uint8_t greenPIN, uint8_t bluePIN, uint8_t wwPIN, uint8_t cwPIN);
+        void    init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
         void    correctHSV(float red, float yellow, float green, float cyan, float blue, float magenta);
+        void    correctMaxBrightness(float r, float g, float b, float ww, float cw);
 
-        void    HSVtoRGB(float hue, float sat, float val, int colors[3]);
-        void    HSVtoRGB(int hue, int sat, int val, int colors[3]);
+        //output related
+        bool    show();
+        void    setOutput(HSV color);
+        void    setOutput(RGBW color);
+        void    setOutputRaw(int red, int green, int blue, int cwhite, int wwhite);
 
-        void    setRGBwWcW(uint16_t red, uint16_t green, uint16_t blue, uint16_t cwhite, uint16_t wwhite);
+        //animation related
+        void    setHSV(HSV& color);
+        void    setHSV(HSV& color, int time, bool shortDirection=true);
+        void    setHSV(HSV& colorFrom, HSV& color, int time, bool shortDirection=true);
 
-    private:
-        uint8_t         _pwmDepth;
-        uint16_t        _pwmWidth;
-        uint16_t        _pwmMaxVal;
-        uint16_t        _pwmHueWheelMax;
-        int16_t         _HueWheelSector[7];
-        int16_t         _HueWheelSectorWidth[6];
-        uint8_t         _redPIN;
-        uint8_t         _greenPIN;
-        uint8_t         _bluePIN;
-        uint8_t         _wwPIN;
-        uint8_t         _cwPIN;
-        uint8_t         _colormode;
-        unsigned long   last_active;
+        //colorutils
+        void    HSVtoRGB(const HSV& hsv, RGBW& rgbw);
+        void    RGBtoHSV(const RGBW& rgbw, HSV& hsv);
 
-        void    createHueWheel();
-        void    updatePWM();
-        int     circleHue(int hue);
-        int     parseColorCorrection(float val);
+        //helpers
         int     parseHue(float hue);
         int     parseSat(float sat);
         int     parseVal(float val);
+        void    circleHue(int& hue);
+        int     parseColorCorrection(float val);
+
+    private:
+        int         _BrightnessFactor[5];
+        int         _HueWheelSector[7];
+        int         _HueWheelSectorWidth[6];
+        int         _redPIN;
+        int         _greenPIN;
+        int         _bluePIN;
+        int         _wwPIN;
+        int         _cwPIN;
+        int         _colormode;
+
+
+        bool        _isAnimationActive;
+        HSV         _current_color;
+        unsigned long   last_active;
+        RGBWWLedAnimation* _currentAnimation;
+
+        //helpers
+        void    createHueWheel();
 
 };
 

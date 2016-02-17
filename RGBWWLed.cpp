@@ -2,69 +2,83 @@
 
 
     @author Patrick Jahns
-    @version 0.1
  **************************************************************/
 #include "RGBWWLed.h"
-#include "debugUtils.h"
+#include "RGBWWLedColor.h"
+#include "RGBWWLedAnimation.h"
 #ifndef ESP8266
     #include "compat.h"
+    #include <stdlib.h>
 #endif // ESP8266
 
+/**************************************************************
+                setup, init and settings
+ **************************************************************/
+
 RGBWWLed::RGBWWLed() {
-	_pwmDepth = PWMWIDTH;
-	_pwmWidth = pow(2, _pwmDepth);
-	_pwmMaxVal = _pwmWidth -1;
-	_pwmHueWheelMax = _pwmMaxVal * (hueV/60);
-	_colormode = RGBW;
+	_colormode = MODE_RGB;
+	_isAnimationActive = false;
+	_current_color = HSV(0, 0, 0);
+    _currentAnimation = NULL;
     createHueWheel();
+	correctMaxBrightness(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
+
 
 }
 
 
-
-void RGBWWLed::init(uint8_t redPIN, uint8_t greenPIN, uint8_t bluePIN, uint8_t wwPIN, uint8_t cwPIN) {
+void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency) {
     _redPIN = redPIN;
     _greenPIN = greenPIN;
     _bluePIN = bluePIN;
     _wwPIN = wwPIN;
     _cwPIN = cwPIN;
 
+    //set pins to output
     pinMode(_redPIN, OUTPUT);
     pinMode(_greenPIN, OUTPUT);
     pinMode(_bluePIN, OUTPUT);
     pinMode(_wwPIN, OUTPUT);
     pinMode(_cwPIN, OUTPUT);
 
-
+    //change PWM Frequency
+    analogWriteFreq(pwmFrequency);
 }
-
-
 
 void RGBWWLed::setMode(int mode) {
-    if (mode == RGB) {
-        _colormode = RGB;
-    } else {
-        _colormode = RGBW;
+    switch(mode) {
+        case MODE_RGBWW: _colormode = MODE_RGBWW; break;
+        case MODE_RGBCW: _colormode = MODE_RGBCW; break;
+        case MODE_RGBWWCW: _colormode = MODE_RGBWWCW; break;
+        default: _colormode = MODE_RGB; break;
     }
+
 }
 
 /**
-    Directly set the PWM values
+    Correct the Maximum brightness of a channel
+
+    @param r red channel (0.0 - 1.0)
+    @param g green channel (0.0 - 1.0)
+    @param b blue channel (0.0 - 1.0)
+    @param cw cold white channel (0.0 - 1.0)
+    @param wm warm white channel (0.0 - 1.0)
 
 */
-void RGBWWLed::setRGBwWcW(uint16_t red, uint16_t green, uint16_t blue, uint16_t wwhite, uint16_t cwhite) {
+void RGBWWLed::correctMaxBrightness(float r, float g, float b, float ww, float cw) {
+    _BrightnessFactor[0] = constrain(r, 0.0, 1.0) * PWMWIDTH;
+    _BrightnessFactor[1] = constrain(g, 0.0, 1.0) * PWMWIDTH;
+    _BrightnessFactor[2] = constrain(b, 0.0, 1.0) * PWMWIDTH;
+    _BrightnessFactor[3] = constrain(cw, 0.0, 1.0) * PWMWIDTH;
+    _BrightnessFactor[4] = constrain(ww, 0.0, 1.0) * PWMWIDTH;
 
-    analogWrite(_redPIN, red);
-    analogWrite(_greenPIN, green);
-    analogWrite(_bluePIN, blue);
-    analogWrite(_wwPIN, wwhite);
-    analogWrite(_cwPIN, cwhite);
+};
 
-}
+
 
 
 /**
-*    Correct
+*    Correct HSV
 *
 *    @param red
 *    @param yellow
@@ -76,7 +90,9 @@ void RGBWWLed::setRGBwWcW(uint16_t red, uint16_t green, uint16_t blue, uint16_t 
 */
 
 void RGBWWLed::correctHSV(float red, float yellow, float green, float cyan, float blue, float magenta) {
-    //reset color wheel before applying any changes
+    // reset color wheel before applying any changes
+    // otherwise we apply changes to any previous colorwheel
+    //TODO: write unit test
     createHueWheel();
     DEBUG("==  correctHSV  ==");
     DEBUG("==  before      ==");
@@ -143,28 +159,144 @@ void RGBWWLed::correctHSV(float red, float yellow, float green, float cyan, floa
     DEBUG("B4 ", _HueWheelSector[4]);
     DEBUG("B5 ", _HueWheelSector[5]);
     DEBUG("B6 ", _HueWheelSector[6]);
+    DEBUG("==  //correctHSV  ==");
     DEBUG(" ");
 }
 
+/**************************************************************
+                    OUTPUT
+**************************************************************/
+
+
 /**
-    Converts HSV values to RGB colorspace
-
-
-    @param hue Hue of HSV [0 - 360]
-	@param sat Saturation of HSV [0 - 100]
-    @param val Value of HSV [0 - 100]
+    Main function responsible for handling animations
 */
-void RGBWWLed::HSVtoRGB(float hue, float sat, float val, int colors[3]) {
-	HSVtoRGB(parseHue(hue), parseSat(sat), parseVal(val), colors);
+bool RGBWWLed::show() {
+    long now = millis();
+
+    #ifdef ESP8266
+    // Interval hasn't passed yet
+    if (now - last_active < MINTIMEDIFF) {
+        return true;
+    }
+    #endif // ESP8266
+    last_active = now;
+
+    // check if we need to animate
+    if (_isAnimationActive == false) {
+        return true;
+    }
+    // Interval has passed - run animation
+
+    if (_currentAnimation->run()) {
+        DEBUG("finished animation");
+        if (_currentAnimation != NULL) {
+                delete _currentAnimation;
+                _currentAnimation = NULL;
+            }
+        _isAnimationActive = false;
+    }
+
+    return false;
+
 }
 
 
-void RGBWWLed::HSVtoRGB(int hue, int sat, int val, int colors[3]) {
-    int red_val, green_val, blue_val, fract, chroma, m;
 
+
+void RGBWWLed::setOutput(HSV color) {
+    RGBW rgbw;
+    _current_color = color;
+    HSVtoRGB(color, rgbw);
+    setOutput(rgbw);
+
+}
+
+void RGBWWLed::setOutput(RGBW c) {
+    int color[5];
+    //TODO white correction
+    color[0] = c.r;
+    color[1] = c.g;
+    color[2] = c.b;
+    color[3] = c.w;
+    color[4] = c.w;
+
+
+    analogWrite(_redPIN, (color[0] * _BrightnessFactor[0]) >> PWMDEPTH);
+    analogWrite(_greenPIN, (color[1] * _BrightnessFactor[1]) >> PWMDEPTH);
+    analogWrite(_bluePIN, (color[2] * _BrightnessFactor[2]) >> PWMDEPTH);
+    analogWrite(_wwPIN, (color[3] * _BrightnessFactor[3]) >> PWMDEPTH);
+    analogWrite(_cwPIN, (color[4] * _BrightnessFactor[4]) >> PWMDEPTH);
+
+}
+
+/**
+    Directly set the PWM values without color correction or white balance
+
+*/
+void RGBWWLed::setOutputRaw(int red, int green, int blue, int wwhite, int cwhite) {
+
+    analogWrite(_redPIN, red);
+    analogWrite(_greenPIN, green);
+    analogWrite(_bluePIN, blue);
+    analogWrite(_wwPIN, wwhite);
+    analogWrite(_cwPIN, cwhite);
+
+}
+
+
+
+void RGBWWLed::setHSV(HSV& color) {
+    setHSV( color, 0);
+}
+
+
+void RGBWWLed::setHSV(HSV& color, int tm, bool shortDirection) {
+    // get current value and then move forward
+    setHSV( _current_color, color, tm, shortDirection);
+}
+
+
+void RGBWWLed::setHSV(HSV& colorFrom, HSV& color, int tm, bool shortDirection ) {
+    // only change color if it is different
+    if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  ) {
+        if (tm == 0) {
+            // no transition time - directly set the color
+            setOutput(color);
+        } else {
+
+            //TODO: check if there has been another animation
+            //TODO: animation Q - how to implement
+            if (_currentAnimation != NULL) {
+                _isAnimationActive = false;
+                delete _currentAnimation;
+                _currentAnimation = NULL;
+            }
+            _currentAnimation = new HSVTransition( colorFrom, color, tm, shortDirection, this);
+            //_currentAnimation->run();
+            _isAnimationActive = true;
+        }
+    }
+
+}
+
+/**************************************************************
+                COLORUTILS
+**************************************************************/
+/**
+    Converts HSV values to RGB colorspace
+
+*/
+
+void RGBWWLed::HSVtoRGB(const HSV& hsv, RGBW& rgbw) {
+    int val, hue, sat, r, g, b, fract, chroma, m;
+    //TODO: write unit test
+
+    hue = hsv.h;
     //gamma correction
-    //val = dim_curve[val];
-    //sat = _pwmMaxVal-dim_curve[_pwmMaxVal-sat];
+    val = dim_curve[hsv.v];
+    //sat = PWMMAXVAL-dim_curve[PWMMAXVAL-sat];
+    sat = hsv.s;
 
     DEBUG("==  HSV2RGB  ==");
     DEBUG("HUE ", hue);
@@ -172,9 +304,18 @@ void RGBWWLed::HSVtoRGB(int hue, int sat, int val, int colors[3]) {
     DEBUG("VAL ", val);
     if(sat == 0) {
         /* color is grayscale */
-        colors[0] = val;
-        colors[1] = val;
-        colors[2] = val;
+        if (_colormode == MODE_RGB) {
+            rgbw.r = val;
+            rgbw.g = val;
+            rgbw.b = val;
+            rgbw.w = 0; //might be undefined otherwise
+        } else {
+            rgbw.r = 0;
+            rgbw.g = 0;
+            rgbw.b = 0;
+            rgbw.w = val;
+        }
+
     } else {
         /*
         We have 6 sectors
@@ -192,116 +333,108 @@ void RGBWWLed::HSVtoRGB(int hue, int sat, int val, int colors[3]) {
         Sector 1 from 25 - 255
         Sector 6 from 1275 - 1530 && 0 - 25
         */
-        chroma = (sat * val)/_pwmMaxVal;
+        chroma = (sat * val)/PWMMAXVAL;
         m = val - chroma;
         DEBUG("CHR ",chroma);
         DEBUG("M   ", m);
         DEBUG("===============");
-
         if ( hue < _HueWheelSector[0] || (hue > _HueWheelSector[5] && hue <= _HueWheelSector[6])) {
             DEBUG("Sector 6");
             if (hue < _HueWheelSector[0]) {
-                fract = _pwmMaxVal + hue ;
+                fract = PWMMAXVAL + hue ;
             } else {
-                fract = hue - (_pwmMaxVal * 5);
+                fract = hue - _HueWheelSector[5];
             }
-            red_val = chroma;
-            green_val = 0;
-            //blue_val = (65280 - sat * (hue - 1275)) >> 8;
-            //blue_val = _pwmMaxVal - ((sat * ((_pwmMaxVal * fract) / _HueWheelSectorWidth[5])) >> _pwmDepth);
-            blue_val= ( chroma * (_pwmMaxVal - (_pwmMaxVal * fract) / _HueWheelSectorWidth[5])) >> _pwmDepth;
 
-        //} else if ( ( hue >= _HueWheelSector[0] && hue <= _HueWheelSector[1] ) || hue > _HueWheelSector[6]) {
+            r = chroma;
+            g = 0;
+            DEBUG(fract);
+            DEBUG(_HueWheelSectorWidth[5]);
+            b = ( chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[5])) >> PWMDEPTH;
+
         } else if (  hue <= _HueWheelSector[1]  || hue > _HueWheelSector[6]) {
             // Sector 1
             DEBUG("Sector 1");
             if (hue > _HueWheelSector[6]) {
                 fract = hue - _HueWheelSector[6];
             } else {
-                fract = hue + (_pwmHueWheelMax - _HueWheelSector[6]);
+                fract = hue + (PWMHUEWHEELMAX - _HueWheelSector[6]);
             }
-            red_val = chroma;
-            //green_val = (65280 - sat * (255 - hue)) >> 8;
-            // chroma * (1 - | h mod 2 -1|)
-             //green_val =  _pwmMaxVal - ((sat * (_pwmMaxVal - ((_pwmMaxVal * fract) / _HueWheelSectorWidth[0]))) >> _pwmDepth);
-            green_val = (chroma * ((_pwmMaxVal * fract) / _HueWheelSectorWidth[0])) >> _pwmDepth;
-            blue_val = 0;
-
-
+            r = chroma;
+            g = (chroma * ((PWMMAXVAL * fract) / _HueWheelSectorWidth[0])) >> PWMDEPTH;
+            b = 0;
 
         } else if (hue <= _HueWheelSector[2]) {
             // Sector 2
             DEBUG("Sector 2");
-            fract = hue - _pwmMaxVal;
-            //red_val = (65280 - sat * (hue - 255)) >> 8;
-            // chroma * (1 - | h mod 2 -1|)
-            //red_val = _pwmMaxVal - (( sat * ((_pwmMaxVal * fract) / _HueWheelSectorWidth[1]))>> _pwmDepth);
-            red_val = (chroma * (_pwmMaxVal - (_pwmMaxVal * fract) / _HueWheelSectorWidth[1])) >> _pwmDepth;
-            green_val = chroma;
-            blue_val = 0;
+            fract = hue - _HueWheelSector[1];
+            r = (chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[1])) >> PWMDEPTH;
+            g = chroma;
+            b = 0;
 
         } else if (hue <= _HueWheelSector[3]) {
             // Sector 3
             DEBUG("Sector 3");
-            fract = hue - (_pwmMaxVal * 2);
-            red_val = 0;
-            green_val = chroma;
-            //blue_val = (65280 - sat * (765 - hue)) >> 8;
-            //blue_val = _pwmMaxVal - ((sat * (_pwmMaxVal - ((_pwmMaxVal * fract) / _HueWheelSectorWidth[2]))) >> _pwmDepth);
-            blue_val = (chroma * ((_pwmMaxVal * fract) / _HueWheelSectorWidth[2])) >> _pwmDepth;
+            fract = hue - _HueWheelSector[2];
+            r = 0;
+            g = chroma;
+            b = (chroma * ((PWMMAXVAL * fract) / _HueWheelSectorWidth[2])) >> PWMDEPTH;
 
         } else if (hue <= _HueWheelSector[4]) {
             // Sector 4
             DEBUG("Sector 4");
-            fract = hue - (_pwmMaxVal * 3);
-            red_val = 0;
-            //green_val = (65280 - sat * (hue - 765)) >> 8;
-            //green_val = _pwmMaxVal - ((sat * ((_pwmMaxVal * fract) / _HueWheelSectorWidth[3])) >> _pwmDepth);
-            green_val =(chroma * (_pwmMaxVal - (_pwmMaxVal * fract) / _HueWheelSectorWidth[3])) >> _pwmDepth;
-            blue_val = chroma;
+            fract = hue - _HueWheelSector[3];
+            r = 0;
+            g =(chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[3])) >> PWMDEPTH;
+            b = chroma;
 
         } else  {
             // Sector 5
             DEBUG("Sector 5");
-            fract = hue - (_pwmMaxVal * 4);
-            //red_val = (65280 - sat * (1275 - hue)) >> 8;
-            //red_val = _pwmMaxVal - (( sat * (_pwmMaxVal - ((_pwmMaxVal * fract) / _HueWheelSectorWidth[4])))>> _pwmDepth);
-            red_val = (chroma * ((_pwmMaxVal * fract) / _HueWheelSectorWidth[4])) >> _pwmDepth;
-            green_val = 0;
-            blue_val = chroma;
+            fract = hue - _HueWheelSector[4];
+            r = (chroma * ((PWMMAXVAL * fract) / _HueWheelSectorWidth[4])) >> PWMDEPTH;
+            g = 0;
+            b = chroma;
 
         }
-    // m equals the white part
-    // for rgbw we use it for the white channels
-    if (_colormode == RGBW) {
-        colors[0] = red_val;
-        colors[1] = green_val;
-        colors[2] = blue_val;
-        colors[3] = m;
+        // m equals the white part
+        // for rgbw we use it for the white channels
+        if (_colormode == MODE_RGB) {
+            rgbw.r = r + m;
+            rgbw.g = g + m;
+            rgbw.b = b + m;
+            rgbw.w = 0; // otherwise might be undefined!
 
-        DEBUG("===============");
-        DEBUG("R ", colors[0]);
-        DEBUG("G ",colors[1]);
-        DEBUG("B ", colors[2]);
-        DEBUG("W ", colors[3]);
-        DEBUG("===============");
-    } else {
-        colors[0] = red_val + m;
-        colors[1] = green_val + m;
-        colors[2] = blue_val + m;
+            DEBUG("===============");
+            DEBUG("R ", rgbw.r);
+            DEBUG("G ", rgbw.g);
+            DEBUG("B ", rgbw.b);
+            DEBUG("===============");
+        } else {
+            rgbw.r = r;
+            rgbw.g = g;
+            rgbw.b = b;
+            rgbw.w = m;
 
-        DEBUG("===============");
-        DEBUG("R ", colors[0]);
-        DEBUG("G ", colors[1]);
-        DEBUG("B ", colors[2]);
-        DEBUG("===============");
+            DEBUG("===============");
+            DEBUG("R ", rgbw.r);
+            DEBUG("G ", rgbw.g);
+            DEBUG("B ", rgbw.b);
+            DEBUG("W ", rgbw.w);
+            DEBUG("===============");
+        }
     }
-
-
-
-    }
+    DEBUG("==  //HSV2RGB  ==");
 }
 
+void  RGBWWLed::RGBtoHSV(const RGBW& rgbw, HSV& hsv) {
+    DEBUG("RGBtoHSV");
+
+};
+
+/**************************************************************
+                HELPER FUNCTIONS
+**************************************************************/
 
 
 /*
@@ -310,18 +443,18 @@ Helper function to create the 6 sectors for the HUE wheel
 void RGBWWLed::createHueWheel() {
     _HueWheelSector[0] = 0;
     for (int i = 1; i <= 6; ++i) {
-        _HueWheelSector[i] = i*_pwmMaxVal;
-        _HueWheelSectorWidth[i-1] = _pwmMaxVal;
+        _HueWheelSector[i] = i*PWMMAXVAL;
+        _HueWheelSectorWidth[i-1] = PWMMAXVAL;
     }
 }
 
 /*
 Helper function to keep Hue between 0 - HueWheelMax
 */
-int RGBWWLed::circleHue(int hue ) {
-    while (hue >= _pwmHueWheelMax) hue -= _pwmHueWheelMax;
-    while (hue < 0) hue += _pwmHueWheelMax;
-    return hue;
+void RGBWWLed::circleHue(int& hue ) {
+    while (hue >= PWMHUEWHEELMAX) hue -= PWMHUEWHEELMAX;
+    while (hue < 0) hue += PWMHUEWHEELMAX;
+
 }
 
 /*
@@ -331,23 +464,23 @@ Converts to the according pwm size (8bit/10bit)
 int RGBWWLed::parseColorCorrection(float val) {
     if (val >= 29.5) val = 29.5;
     if (val <= -29.5) val = -29.5;
-    return int(((val / 60) * (_pwmMaxVal)) * -1);
+    return int(((val / 60) * (PWMMAXVAL)) * -1);
 }
 
 int RGBWWLed::parseHue(float hue) {
     hue = constrain(hue, 0.0, 360.0);
-    hue = int((hue / hueV) * (_pwmHueWheelMax));
-	return hue;
+    return int((hue / 360) * (PWMHUEWHEELMAX));
+
 }
 
 int RGBWWLed::parseSat(float sat) {
 	sat = constrain(sat, 0.0, 100.0);
-	return int((sat / satV) * (_pwmMaxVal));
+	return int((sat / 100) * (PWMMAXVAL));
 }
 
 int RGBWWLed::parseVal(float val){
 	val = constrain(val, 0.0, 100.0);
-	return int((val / valV) * (_pwmMaxVal));
+	return int((val / 100) * (PWMMAXVAL));
 }
 
 
