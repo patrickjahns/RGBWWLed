@@ -7,7 +7,7 @@
 
 #ifndef RGBWWLed_h
 #define RGBWWLed_h
-//#define USE_DEBUG
+#define USE_DEBUG
 #include "debugUtils.h"
 #ifdef ESP8266
     #include <ESP8266WiFi.h>
@@ -33,8 +33,6 @@
 #define PWMFREQUENCY 200
 
 
-
-
 class RGBWWLed
 {
     public:
@@ -56,6 +54,9 @@ class RGBWWLed
         void    setHSV(HSV& color);
         void    setHSV(HSV& color, int time, bool shortDirection=true);
         void    setHSV(HSV& colorFrom, HSV& color, int time, bool shortDirection=true);
+        void    skipAnimation();
+        void    clearAnimationQueue();
+
 
         //colorutils
         void    HSVtoRGB(const HSV& hsv, RGBW& rgbw);
@@ -69,21 +70,24 @@ class RGBWWLed
         int     parseColorCorrection(float val);
 
     private:
-        int         _BrightnessFactor[5];
-        int         _HueWheelSector[7];
-        int         _HueWheelSectorWidth[6];
-        int         _redPIN;
-        int         _greenPIN;
-        int         _bluePIN;
-        int         _wwPIN;
-        int         _cwPIN;
-        int         _colormode;
+        int             _BrightnessFactor[5];
+        int             _HueWheelSector[7];
+        int             _HueWheelSectorWidth[6];
+        int             _redPIN;
+        int             _greenPIN;
+        int             _bluePIN;
+        int             _wwPIN;
+        int             _cwPIN;
+        int             _colormode;
 
+        bool            _cancelAnimation;
+        bool            _clearAnimationQueue;
+        bool            _isAnimationActive;
 
-        bool        _isAnimationActive;
-        HSV         _current_color;
+        HSV             _current_color;
         unsigned long   last_active;
-        RGBWWLedAnimation* _currentAnimation;
+
+        RGBWWLedAnimation*  _currentAnimation;
 
         //helpers
         void    createHueWheel();

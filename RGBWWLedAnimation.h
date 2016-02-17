@@ -15,8 +15,9 @@ class RGBWWLed;
 class RGBWWLedAnimation
 {
     public:
-        virtual bool run() {};
-        virtual bool run(int st) {};
+        virtual bool run() {return true;};
+        virtual bool run(int st) {return true;};
+        virtual ~RGBWWLedAnimation() {};
 };
 
 class HSVTransition: public RGBWWLedAnimation

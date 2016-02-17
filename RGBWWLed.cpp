@@ -16,8 +16,10 @@
  **************************************************************/
 
 RGBWWLed::RGBWWLed() {
+    _isAnimationActive = false;
+    _cancelAnimation = false;
+    _clearAnimationQueue = false;
 	_colormode = MODE_RGB;
-	_isAnimationActive = false;
 	_current_color = HSV(0, 0, 0);
     _currentAnimation = NULL;
     createHueWheel();
@@ -167,43 +169,6 @@ void RGBWWLed::correctHSV(float red, float yellow, float green, float cyan, floa
                     OUTPUT
 **************************************************************/
 
-
-/**
-    Main function responsible for handling animations
-*/
-bool RGBWWLed::show() {
-    long now = millis();
-
-    #ifdef ESP8266
-    // Interval hasn't passed yet
-    if (now - last_active < MINTIMEDIFF) {
-        return true;
-    }
-    #endif // ESP8266
-    last_active = now;
-
-    // check if we need to animate
-    if (_isAnimationActive == false) {
-        return true;
-    }
-    // Interval has passed - run animation
-
-    if (_currentAnimation->run()) {
-        DEBUG("finished animation");
-        if (_currentAnimation != NULL) {
-                delete _currentAnimation;
-                _currentAnimation = NULL;
-            }
-        _isAnimationActive = false;
-    }
-
-    return false;
-
-}
-
-
-
-
 void RGBWWLed::setOutput(HSV color) {
     RGBW rgbw;
     _current_color = color;
@@ -245,6 +210,73 @@ void RGBWWLed::setOutputRaw(int red, int green, int blue, int wwhite, int cwhite
 }
 
 
+/**************************************************************
+                ANIMATION/TRANSITION
+**************************************************************/
+
+
+/**
+    Main function responsible for handling animations
+*/
+bool RGBWWLed::show() {
+    long now = millis();
+
+
+    // check if we need to cancel effect
+    if (_cancelAnimation || _clearAnimationQueue) {
+        //TODO empty the whole queue here
+        if (_currentAnimation != NULL) {
+            delete _currentAnimation;
+            _currentAnimation = NULL;
+        }
+        _isAnimationActive = false;
+        _cancelAnimation = false;
+        if (_clearAnimationQueue) {
+            //TODO: clear Animation Queue
+            _clearAnimationQueue = false;
+        }
+    }
+
+    #ifdef ESP8266
+    // Interval hasn't passed yet
+    if (now - last_active < MINTIMEDIFF) {
+        return true;
+    }
+    #endif // ESP8266
+    last_active = now;
+
+    // check if we need to animate or there is any new animation
+    if (!_isAnimationActive) {
+        //check if animation otherwise return true
+        return true;
+    }
+    // Interval has passed - run animation
+
+    if (_currentAnimation->run()) {
+        DEBUG("finished animation");
+        if (_currentAnimation != NULL) {
+                delete _currentAnimation;
+                _currentAnimation = NULL;
+            }
+        _isAnimationActive = false;
+    }
+
+    return false;
+
+}
+
+void    RGBWWLed::skipAnimation(){
+    if (_isAnimationActive) {
+        _cancelAnimation = true;
+    }
+}
+
+void    RGBWWLed::clearAnimationQueue() {
+    if (_isAnimationActive) {
+        _clearAnimationQueue = true;
+    }
+}
+
 
 void RGBWWLed::setHSV(HSV& color) {
     setHSV( color, 0);
@@ -264,6 +296,8 @@ void RGBWWLed::setHSV(HSV& colorFrom, HSV& color, int tm, bool shortDirection ) 
             // no transition time - directly set the color
             setOutput(color);
         } else {
+            // Fix fading from off to on with different HUE
+            //colorFrom.h = (colorFrom.v == 0 && color.h != colorFrom.h) ? color.h : colorFrom.h;
 
             //TODO: check if there has been another animation
             //TODO: animation Q - how to implement

@@ -22,7 +22,7 @@ HSVTransition::HSVTransition(HSV colorFrom, HSV color, const int& tm, const bool
     direction = (l < r)? -1 : 1;
 
     // turn direction if user wishes for long transition
-    direction = (shortDirection == true) ? direction : -1*direction;
+    direction = (shortDirection) ? direction : -1*direction;
 
     //calculate steps per time
     _steps = tm / MINTIMEDIFF;
