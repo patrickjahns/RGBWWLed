@@ -27,6 +27,11 @@
 #define MODE_RGBWW 1
 #define MODE_RGBCW 2
 #define MODE_RGBWWCW 3
+
+#define HSV_MODE_NORMAL 0
+#define HSV_MODE_SPEKTRUM 1
+#define HSV_MODE_RAINBOW 2
+
 // Frequency of updates per second
 #define UPDATEFREQUENCY 50
 #define MINTIMEDIFF  int(1000 / UPDATEFREQUENCY)
@@ -60,6 +65,10 @@ class RGBWWLed
 
         //colorutils
         void    HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
+        void    HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, int mode);
+        void    HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw);
+        void    HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw);
+        void    HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw);
         void    RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
 
         //helpers
@@ -79,6 +88,7 @@ class RGBWWLed
         int             _wwPIN;
         int             _cwPIN;
         int             _colormode;
+        int             _hsvmode;
 
         bool            _cancelAnimation;
         bool            _clearAnimationQueue;

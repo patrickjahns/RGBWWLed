@@ -22,6 +22,7 @@ RGBWWLed::RGBWWLed() {
 	_colormode = MODE_RGB;
 	_current_color = HSVK(0, 0, 0);
     _currentAnimation = NULL;
+    _hsvmode = HSV_MODE_NORMAL;
     createHueWheel();
 	correctMaxBrightness(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
 
@@ -317,12 +318,53 @@ void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int tm, bool shortDirection 
 /**************************************************************
                 COLORUTILS
 **************************************************************/
+
+
+
+void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw) {
+    HSVtoRGB(hsv, rgbw, _hsvmode);
+}
+
+void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, int mode) {
+    switch(mode) {
+    case HSV_MODE_SPEKTRUM: HSVtoRGBspektrum(hsv, rgbw); break;
+    case HSV_MODE_RAINBOW: HSVtoRGBrainbow(hsv, rgbw); break;
+    default: HSVtoRGBn(hsv, rgbw); break;
+    }
+
+}
+
 /**
-    Converts HSV values to RGB colorspace
+    Convert HSV values to RGB colorspace by keeping
+    the max total color output equal.
+    Information see:
+    https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
 
 */
 
-void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw) {
+void RGBWWLed::HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw) {
+    //TODO: implement linear spectrum
+    HSVtoRGBn(hsv, rgbw);
+}
+
+/**
+    Convert HSV values to RGB colorspace with rainbow color table
+    Information see:
+    https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
+
+*/
+void RGBWWLed::HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw) {
+    //TODO: implement rainbow spectrum
+    HSVtoRGBn(hsv, rgbw);
+}
+
+/**
+    Convert HSV values to RGB colorspace standard algorithm
+    Mor Information on the "standard" conversion:
+    https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+
+*/
+void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
     int val, hue, sat, r, g, b, fract, chroma, m;
     //TODO: write unit test
 
