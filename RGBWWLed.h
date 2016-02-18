@@ -36,7 +36,7 @@
 #define UPDATEFREQUENCY 50
 #define MINTIMEDIFF  int(1000 / UPDATEFREQUENCY)
 #define PWMFREQUENCY 200
-#define ANIMATIONQSIZE 30
+#define ANIMATIONQSIZE 50
 
 
 class RGBWWLed
@@ -45,16 +45,23 @@ class RGBWWLed
         //init & settings
         RGBWWLed();
 
-        void    setMode(int mode);
+        void    setColorMode(int mode);
+        int     getColorMode();
+        void    setHSVmode(int mode);
+        int     getHSVmode();
         void    init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
-        void    correctHSV(float red, float yellow, float green, float cyan, float blue, float magenta);
-        void    correctMaxBrightness(float r, float g, float b, float ww, float cw);
+        void    setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
+        void    getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
+        void    setBrightnessCorrection(float r, float g, float b, float ww, float cw);
+        void    getBrightnessCorrection(float& r, float& g, float& b, float& ww, float& cw);
+
 
         //output related
         bool    show();
         void    setOutput(HSVK color);
         void    setOutput(RGBWK color);
         void    setOutputRaw(int red, int green, int blue, int cwhite, int wwhite);
+        HSVK    getCurrenctColor();
 
         //animation related
         void    setHSV(HSVK& color);
@@ -62,6 +69,7 @@ class RGBWWLed
         void    setHSV(HSVK& color, int time, bool q);
         void    setHSV(HSVK& color, int time, int direction, bool q);
         void    setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
+        bool    isAnimationQFull();
         void    skipAnimation();
         void    clearAnimationQueue();
 
@@ -73,6 +81,7 @@ class RGBWWLed
         void    HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw);
         void    HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw);
         void    RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
+
 
         //helpers
         int     parseHue(float hue);
@@ -110,6 +119,7 @@ class RGBWWLed
 
 };
 
+//TODO move to progmem
 const uint16_t dim_curve[1024] = {
 	0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
 	1, 1, 1, 1, 2, 2, 2, 2, 2, 2,

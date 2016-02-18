@@ -25,9 +25,7 @@ RGBWWLed::RGBWWLed() {
     _hsvmode = HSV_MODE_NORMAL;
     _animationQ = RGBWWLedAnimationQ(ANIMATIONQSIZE);
     createHueWheel();
-	correctMaxBrightness(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
-
-
+	setBrightnessCorrection(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
 }
 
 
@@ -49,7 +47,11 @@ void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN,
     analogWriteFreq(pwmFrequency);
 }
 
-void RGBWWLed::setMode(int mode) {
+/**
+    Change Mode for color calculations
+*/
+
+void RGBWWLed::setColorMode(int mode) {
     switch(mode) {
         case MODE_RGBWW: _colormode = MODE_RGBWW; break;
         case MODE_RGBCW: _colormode = MODE_RGBCW; break;
@@ -58,6 +60,28 @@ void RGBWWLed::setMode(int mode) {
     }
 
 }
+
+int RGBWWLed::getColorMode() {
+    return _colormode;
+}
+/**
+
+    Change HSV to RGBW calculation Model
+
+*/
+void RGBWWLed::setHSVmode(int mode) {
+    switch(mode) {
+        case HSV_MODE_SPEKTRUM: _hsvmode = HSV_MODE_SPEKTRUM; break;
+        case HSV_MODE_RAINBOW: _hsvmode = HSV_MODE_RAINBOW; break;
+        default: _hsvmode = HSV_MODE_NORMAL; break;
+    }
+
+}
+
+int RGBWWLed::getHSVmode() {
+    return _hsvmode;
+}
+
 
 /**
     Correct the Maximum brightness of a channel
@@ -69,7 +93,7 @@ void RGBWWLed::setMode(int mode) {
     @param wm warm white channel (0.0 - 1.0)
 
 */
-void RGBWWLed::correctMaxBrightness(float r, float g, float b, float ww, float cw) {
+void RGBWWLed::setBrightnessCorrection(float r, float g, float b, float ww, float cw) {
     _BrightnessFactor[0] = constrain(r, 0.0, 1.0) * PWMWIDTH;
     _BrightnessFactor[1] = constrain(g, 0.0, 1.0) * PWMWIDTH;
     _BrightnessFactor[2] = constrain(b, 0.0, 1.0) * PWMWIDTH;
@@ -78,7 +102,13 @@ void RGBWWLed::correctMaxBrightness(float r, float g, float b, float ww, float c
 
 };
 
-
+void RGBWWLed::getBrightnessCorrection(float& r, float& g, float& b, float& ww, float& cw) {
+    r = float(_BrightnessFactor[0]/PWMWIDTH);
+    g = float(_BrightnessFactor[1]/PWMWIDTH);
+    b = float(_BrightnessFactor[2]/PWMWIDTH);
+    ww = float(_BrightnessFactor[3]/PWMWIDTH);
+    cw = float(_BrightnessFactor[4]/PWMWIDTH);
+}
 
 
 /**
@@ -93,7 +123,7 @@ void RGBWWLed::correctMaxBrightness(float r, float g, float b, float ww, float c
 *
 */
 
-void RGBWWLed::correctHSV(float red, float yellow, float green, float cyan, float blue, float magenta) {
+void RGBWWLed::setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta) {
     // reset color wheel before applying any changes
     // otherwise we apply changes to any previous colorwheel
     //TODO: write unit test
@@ -167,9 +197,23 @@ void RGBWWLed::correctHSV(float red, float yellow, float green, float cyan, floa
     DEBUG(" ");
 }
 
+void RGBWWLed::getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta) {
+    red = -1 * (float(_HueWheelSector[6] - 6*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
+    yellow = -1 * (float(_HueWheelSector[1] - 1*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
+    green = -1 * (float(_HueWheelSector[2] - 2*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
+    cyan = -1 * (float(_HueWheelSector[3] - 3*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
+    blue = -1 * (float(_HueWheelSector[4] - 4*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
+    magenta = -1 * (float(_HueWheelSector[5] - 5*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
+
+}
+
 /**************************************************************
                     OUTPUT
 **************************************************************/
+
+HSVK RGBWWLed::getCurrenctColor() {
+    return _current_color;
+}
 
 void RGBWWLed::setOutput(HSVK color) {
     RGBWK rgbw;
@@ -338,6 +382,10 @@ void RGBWWLed::clearAnimationQ() {
         RGBWWLedAnimation* animation = _animationQ.pop();
         delete animation;
     }
+}
+
+bool RGBWWLed::isAnimationQFull() {
+    return _animationQ.isFull();
 }
 
 /**************************************************************
