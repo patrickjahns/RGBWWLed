@@ -1,21 +1,11 @@
+/**************************************************************
+
+
+    @author Patrick Jahns
+ **************************************************************/
 #ifndef RGBWWLedColor_h
 #define RGBWWLedColor_h
-
-#ifdef ESP8266
-    #include <ESP8266WiFi.h>
-#else
-    #include "math.h"
-    #include <stdint.h>
-    #include "compat.h"
-    #include <stdlib.h>
-#endif
-
-#define PWMDEPTH 10
-#define PWMWIDTH int(pow(2, PWMDEPTH))
-#define	PWMMAXVAL int(PWMWIDTH - 1)
-#define	PWMHUEWHEELMAX int(PWMMAXVAL * 6)
-
-
+#include "RGBWWLed.h"
 
 
 //struct for RGBW
