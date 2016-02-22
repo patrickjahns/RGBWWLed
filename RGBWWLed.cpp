@@ -190,6 +190,11 @@ void RGBWWLed::getHSVcorrection(float& red, float& yellow, float& green, float& 
                     OUTPUT
  **************************************************************/
 
+void RGBWWLed::refresh() {
+	setOutput(getCurrenctColor());
+}
+ 
+ 
 HSVK RGBWWLed::getCurrenctColor() {
 	return _current_color;
 }
@@ -435,7 +440,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 	//gamma correction
 	val = dim_curve[hsv.v];
 	sat = hsv.s;
-	//sat = PWMMAXVAL-dim_curve[PWMMAXVAL-sat];
+	sat = PWMMAXVAL-dim_curve[PWMMAXVAL-sat];
 	//sat = hsv.s;
 
 	rgbw.k = hsv.k;

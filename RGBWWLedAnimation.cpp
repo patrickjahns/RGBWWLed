@@ -102,6 +102,17 @@ bool HSVTransition::run (int st) {
 		init();
 	}
 	_currentstep++;
+	if (_currentstep >= _steps) {
+		// ensure that the with the last step we arrive at the destination color
+		rgbled->setOutput(_finalcolor);
+		return true;
+	}
+	
+	/*
+	*	improvement idea: set new value at the beginning and then calculate next step
+	*
+	*/
+	
 	//calculate new colors with bresenham
 	_currentcolor.h = bresenham(_hueerror, _huecount, _steps, _dhue, _huestep, _basecolor.h, _currentcolor.h);
 	//fix hue
@@ -116,13 +127,6 @@ bool HSVTransition::run (int st) {
 	//DEBUG("S", _currentcolor.s);
 	//DEBUG("V", _currentcolor.v);
 	//DEBUG("== //HSV RUN =====");
-
-	if (_currentstep >= _steps) {
-		// ensure that the with the last step we arrive at the destination color
-		rgbled->setOutput(_finalcolor);
-		return true;
-	}
-
 
 	rgbled->setOutput(_currentcolor);
 	return false;
@@ -153,6 +157,11 @@ RGBWWLedAnimationQ::RGBWWLedAnimationQ(int qsize) {
     q = new RGBWWLedAnimation*[qsize];
 }
 
+RGBWWLedAnimationQ::~RGBWWLedAnimationQ(){
+	//cleanup 
+	delete q;
+}
+
 bool RGBWWLedAnimationQ::isEmpty() {
 	return _count == 0;
 }
@@ -163,11 +172,9 @@ bool RGBWWLedAnimationQ::isFull() {
 
 bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
 	if (!isFull()){
-		//
 		_count++;
 		q[_front] = animation;
 		_front = (_front+1) % _size;
-		//q.push(animation);
 		return true;
 	}
 	return false;
@@ -178,8 +185,6 @@ bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
 
 RGBWWLedAnimation* RGBWWLedAnimationQ::peek() {
 	if (!isEmpty()) {
-	//	return q.front();
-	//
         return q[_back];
 	}
 	return NULL;

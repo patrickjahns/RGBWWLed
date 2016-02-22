@@ -70,6 +70,7 @@ public:
 
 	//output related
 	bool    	show();
+	void		refresh();
 	void    	setOutput(HSVK color);
 	void    	setOutput(RGBWK color);
 	void    	setOutputRaw(int red, int green, int blue, int cwhite, int wwhite);

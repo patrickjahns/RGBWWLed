@@ -18,6 +18,7 @@ class RGBWWLedAnimationQ
 public:
 	RGBWWLedAnimationQ() {};
 	RGBWWLedAnimationQ(int qsize);
+	~RGBWWLedAnimationQ();
 	bool                isEmpty();
 	bool                isFull();
 	bool                push(RGBWWLedAnimation* animation);
