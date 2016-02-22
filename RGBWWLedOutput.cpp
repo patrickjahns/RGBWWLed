@@ -151,7 +151,7 @@ PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t 
 	_pins[COLORS::GREEN] = greenPin;
 	_pins[COLORS::BLUE] = bluePin;
 	_pins[COLORS::WW] = wwPin;
-	_pins[COLOR::CW] = cwPin;
+	_pins[COLORS::CW] = cwPin;
 	pinMode(redPin, OUTPUT);
 	pinMode(greenPin, OUTPUT);
 	pinMode(bluePin, OUTPUT);
@@ -172,7 +172,7 @@ int	PWMOutput::getFrequency() {
 
 void PWMOutput::setRed(int value, bool update /* = true */) {
 	_duty[COLORS::RED] = value;
-	analogWrite(pins[COLORS::RED], value);
+	analogWrite(_pins[COLORS::RED], value);
 }
 
 int PWMOutput::getRed() {
@@ -182,7 +182,7 @@ int PWMOutput::getRed() {
 
 void PWMOutput::setGreen(int value, bool update /* = true */) {
 	_duty[COLORS::GREEN] = value;
-	analogWrite(pins[COLORS::GREEN], value);
+	analogWrite(_pins[COLORS::GREEN], value);
 }
 
 int PWMOutput::getGreen() {
@@ -191,7 +191,7 @@ int PWMOutput::getGreen() {
 
 void PWMOutput::setBlue(int value, bool update /* = true */) {
 	_duty[COLORS::BLUE] = value;
-	analogWrite(pins[COLORS::BLUE], value);
+	analogWrite(_pins[COLORS::BLUE], value);
 }
 
 int	PWMOutput::getBlue() {
@@ -201,16 +201,16 @@ int	PWMOutput::getBlue() {
 
 void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
 	_duty[COLORS::WW] = value;
-	analogWrite(pins[COLORS::WW], value);
+	analogWrite(_pins[COLORS::WW], value);
 }
 
-int PWMOutput:getWarmWhite() {
+int PWMOutput::getWarmWhite() {
 	return _duty[COLORS::WW];
 }
 
 void PWMOutput::setColdWhite(int value, bool update /* = true */) {
 	_duty[COLORS::CW] = value;
-	analogWrite(pins[COLORS::CW], value);
+	analogWrite(_pins[COLORS::CW], value);
 }
 
 int	PWMOutput::getColdWhite() {

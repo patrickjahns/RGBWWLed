@@ -21,9 +21,11 @@
 #define	WARMWHITEKELVIN 2700
 #define COLDWHITEKELVIN 6000
 
-
-#include "../../SmingCore/SmingCore.h"
-#define USE_DEBUG
+#include <ARDUINO.h>
+#ifndef ARDUINO
+	#include "../../SmingCore/SmingCore.h"
+#endif
+#define DEBUG_RGB
 #include "debugUtils.h"
 #include "RGBWWLedColor.h"
 #include "RGBWWLedAnimation.h"
