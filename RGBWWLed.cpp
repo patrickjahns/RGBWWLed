@@ -406,14 +406,20 @@ bool RGBWWLed::isAnimationQFull() {
 		break;
 	case RGBCW:
 		//TODO implement valid algorithm
+		cw = rgbw.w;
+		ww = 0;
 		break;
 		
 	case RGBWW:
 		//TODO implement valid algorithm
+		cw = 0;
+		ww = rgbw.w;
 		break;
 		
 	case RGB:
 		//TODO implement valid algorithm
+		cw = 0;
+		ww = 0;
 		break;
 	}
  }
