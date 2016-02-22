@@ -60,7 +60,7 @@ class RGBWWLed
 public:
 	//init & settings
 	RGBWWLed();
-
+	virtual ~RGBWWLed();
 	void		setColorMode(COLORMODE mode);
 	COLORMODE 	getColorMode();
 	void    	setHSVmode(HSVMODE mode);

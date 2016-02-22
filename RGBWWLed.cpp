@@ -30,6 +30,15 @@ RGBWWLed::RGBWWLed() {
 	setBrightnessCorrection(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
 }
 
+RGBWWLed::~RGBWWLed() {
+	delete _animationQ;
+	if (_currentAnimation != NULL) {
+		delete _currentAnimation;
+	}
+	if (_pwm_output != NULL) {
+		delete _pwm_output;
+	}
+}
 
 void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency) {
 

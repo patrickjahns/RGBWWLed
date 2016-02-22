@@ -159,6 +159,13 @@ RGBWWLedAnimationQ::RGBWWLedAnimationQ(int qsize) {
 
 RGBWWLedAnimationQ::~RGBWWLedAnimationQ(){
 	//cleanup 
+	RGBWWLedAnimation* animation;
+	while(!isEmpty()) {
+		animation = q.pop;
+		if (animation != NULL) {
+			delete animation;
+		}
+	}
 	delete q;
 }
 
