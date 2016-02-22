@@ -18,6 +18,8 @@
 #define UPDATEFREQUENCY 50
 #define MINTIMEDIFF  int(1000 / UPDATEFREQUENCY)
 #define ANIMATIONQSIZE 50
+#define	WARMWHITEKELVIN 2700
+#define COLDWHITEKELVIN 6000
 
 
 #include "../../SmingCore/SmingCore.h"
@@ -88,6 +90,7 @@ public:
 
 
 	//colorutils
+	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
 	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
 	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, HSVMODE mode);
 	void    	HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw);
@@ -107,6 +110,9 @@ private:
 	int         _BrightnessFactor[5];
 	int         _HueWheelSector[7];
 	int         _HueWheelSectorWidth[6];
+	int			_WarmWhiteKelvin;
+	int			_ColdWhiteKelvin;
+	
 	COLORMODE       _colormode;
 	HSVMODE         _hsvmode;
 	HSVK            _current_color;

@@ -8,20 +8,20 @@
 
 HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& direction, RGBWWLed* led ) {
 
-	//DEBUG("== HSVT Constructor =======");
+	//debugRGBW("== HSVT Constructor =======");
 	rgbled = led;
 	_finalcolor = color;
 	_hasbasecolor = false;
 	_steps = time / MINTIMEDIFF;
 	_huedirection = direction;
 	_currentstep = 0;
-	//DEBUG("== //HSVT Constructor =====");
+	//debugRGBW("== //HSVT Constructor =====");
 }
 
 
 HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int& tm, const int& direction, RGBWWLed* led ) {
 
-	//DEBUG("== HSVT Constructor =======");
+	//debugRGBW("== HSVT Constructor =======");
 	rgbled = led;
 	_finalcolor = color;
 	_basecolor = colorFrom;
@@ -29,12 +29,12 @@ HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int
 	_steps = tm / MINTIMEDIFF;
 	_huedirection = direction;
 	_currentstep = 0;
-	//DEBUG("== //HSVT Constructor =====");
+	//debugRGBW("== //HSVT Constructor =====");
 }
 
 void HSVTransition::init() {
 	int l, r, d;
-	//DEBUG("==   HSVT INIT   =====");
+	//debugRGBW("==   HSVT INIT   =====");
 	if (!_hasbasecolor) {
 		_basecolor = rgbled->getCurrenctColor();
 	}
@@ -84,20 +84,20 @@ void HSVTransition::init() {
 	_kelvinerror = -1 * _steps;
 	_kelvincount = 0;
 
-	//DEBUG("_steps", _steps);
-	//DEBUG("dhue", _dhue);
-	//DEBUG("dsat", _dsat);
-	//DEBUG("dval", _dval);
-	//DEBUG("_currentcolor", _currentcolor.h);
-	//DEBUG("== //HSVT INIT   =====");
+	//debugRGBW("_steps %i", _steps);
+	//debugRGBW("dhue %i", _dhue);
+	//debugRGBW("dsat %i", _dsat);
+	//debugRGBW("dval %i", _dval);
+	//debugRGBW("_currentcolor.h  %i", _currentcolor.h);
+	//debugRGBW("== //HSVT INIT   =====");
 }
 
 bool HSVTransition::run() {
 	return run(1);
 }
-//TODO: skip steps if we missed them because of time delays
+
 bool HSVTransition::run (int st) {
-	//DEBUG("== HSV RUN =====");
+	//debugRGBW("== HSV RUN =====");
 	if (_currentstep == 0) {
 		init();
 	}
@@ -123,10 +123,10 @@ bool HSVTransition::run (int st) {
 
 
 
-	//DEBUG("H", _currentcolor.h);
-	//DEBUG("S", _currentcolor.s);
-	//DEBUG("V", _currentcolor.v);
-	//DEBUG("== //HSV RUN =====");
+	//debugRGBW("H", _currentcolor.h);
+	//debugRGBW("S", _currentcolor.s);
+	//debugRGBW("V", _currentcolor.v);
+	//debugRGBW("== //HSV RUN =====");
 
 	rgbled->setOutput(_currentcolor);
 	return false;

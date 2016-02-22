@@ -24,6 +24,8 @@ RGBWWLed::RGBWWLed() {
 	_hsvmode = NORMAL;
 	_animationQ = new RGBWWLedAnimationQ(ANIMATIONQSIZE);
 	_pwm_output = NULL;
+	_WarmWhiteKelvin = WARMWHITEKELVIN;
+	_ColdWhiteKelvin = COLDWHITEKELVIN;
 	createHueWheel();
 	setBrightnessCorrection(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
 }
@@ -106,23 +108,23 @@ void RGBWWLed::setHSVcorrection(float red, float yellow, float green, float cyan
 	//TODO: write unit test
 	createHueWheel();
 	/*
-	DEBUG("==  correctHSV  ==");
-	DEBUG("==  before      ==");
-	DEBUG("W0 ", _HueWheelSectorWidth[0]);
-	DEBUG("W1 ", _HueWheelSectorWidth[1]);
-	DEBUG("W2 ", _HueWheelSectorWidth[2]);
-	DEBUG("W3 ", _HueWheelSectorWidth[3]);
-	DEBUG("W4 ", _HueWheelSectorWidth[4]);
-	DEBUG("W5 ", _HueWheelSectorWidth[5]);
-	DEBUG(" ");
-	DEBUG("B0 ", _HueWheelSector[0]);
-	DEBUG("B1 ", _HueWheelSector[1]);
-	DEBUG("B2 ", _HueWheelSector[2]);
-	DEBUG("B3 ", _HueWheelSector[3]);
-	DEBUG("B4 ", _HueWheelSector[4]);
-	DEBUG("B5 ", _HueWheelSector[5]);
-	DEBUG("B6 ", _HueWheelSector[6]);
-	DEBUG(" ");
+	debugRGBW("==  correctHSV  ==");
+	debugRGBW("==  before      ==");
+	debugRGBW("W0 %i", _HueWheelSectorWidth[0]);
+	debugRGBW("W1 %i", _HueWheelSectorWidth[1]);
+	debugRGBW("W2 %i", _HueWheelSectorWidth[2]);
+	debugRGBW("W3 %i", _HueWheelSectorWidth[3]);
+	debugRGBW("W4 %i", _HueWheelSectorWidth[4]);
+	debugRGBW("W5 %i", _HueWheelSectorWidth[5]);
+	debugRGBW(" ");
+	debugRGBW("B0 %i", _HueWheelSector[0]);
+	debugRGBW("B1 %i", _HueWheelSector[1]);
+	debugRGBW("B2 %i", _HueWheelSector[2]);
+	debugRGBW("B3 %i", _HueWheelSector[3]);
+	debugRGBW("B4 %i", _HueWheelSector[4]);
+	debugRGBW("B5 %i", _HueWheelSector[5]);
+	debugRGBW("B6 %i", _HueWheelSector[6]);
+	debugRGBW(" ");
 	*/
 	//correct sector 1
 	_HueWheelSectorWidth[0] -= parseColorCorrection(red);
@@ -156,23 +158,23 @@ void RGBWWLed::setHSVcorrection(float red, float yellow, float green, float cyan
 	_HueWheelSector[0] += parseColorCorrection(red);
 
 	/*
-	DEBUG("==  after      ==");
-	DEBUG("W0 ", _HueWheelSectorWidth[0]);
-	DEBUG("W1 ", _HueWheelSectorWidth[1]);
-	DEBUG("W2 ", _HueWheelSectorWidth[2]);
-	DEBUG("W3 ", _HueWheelSectorWidth[3]);
-	DEBUG("W4 ", _HueWheelSectorWidth[4]);
-	DEBUG("W5 ", _HueWheelSectorWidth[5]);
-	DEBUG(" ");
-	DEBUG("B0 ", _HueWheelSector[0]);
-	DEBUG("B1 ", _HueWheelSector[1]);
-	DEBUG("B2 ", _HueWheelSector[2]);
-	DEBUG("B3 ", _HueWheelSector[3]);
-	DEBUG("B4 ", _HueWheelSector[4]);
-	DEBUG("B5 ", _HueWheelSector[5]);
-	DEBUG("B6 ", _HueWheelSector[6]);
-	DEBUG("==  //correctHSV  ==");
-	DEBUG(" ");
+	debugRGBW("==  after      ==");
+	debugRGBW("W0 %i", _HueWheelSectorWidth[0]);
+	debugRGBW("W1 %i", _HueWheelSectorWidth[1]);
+	debugRGBW("W2 %i", _HueWheelSectorWidth[2]);
+	debugRGBW("W3 %i", _HueWheelSectorWidth[3]);
+	debugRGBW("W4 %i", _HueWheelSectorWidth[4]);
+	debugRGBW("W5 %i", _HueWheelSectorWidth[5]);
+	debugRGBW(" ");
+	debugRGBW("B0 %i", _HueWheelSector[0]);
+	debugRGBW("B1 %i", _HueWheelSector[1]);
+	debugRGBW("B2 %i", _HueWheelSector[2]);
+	debugRGBW("B3 %i", _HueWheelSector[3]);
+	debugRGBW("B4 %i", _HueWheelSector[4]);
+	debugRGBW("B5 %i", _HueWheelSector[5]);
+	debugRGBW("B6 %i", _HueWheelSector[6]);
+	debugRGBW("==  //correctHSV  ==");
+	debugRGBW(" ");
 	*/
 }
 
@@ -209,12 +211,13 @@ void RGBWWLed::setOutput(HSVK color) {
 
 void RGBWWLed::setOutput(RGBWK c) {
 	int color[5];
-	//TODO white correction
+	int ww, cw;
+	whiteBalance(c, ww, cw);
 	color[0] = (c.r * _BrightnessFactor[0]) >> PWMDEPTH;
 	color[1] = (c.g * _BrightnessFactor[1]) >> PWMDEPTH;
 	color[2] = (c.b * _BrightnessFactor[2]) >> PWMDEPTH;
-	color[3] = (c.w * _BrightnessFactor[3]) >> PWMDEPTH;
-	color[4] = (c.w * _BrightnessFactor[4]) >> PWMDEPTH;
+	color[3] = (ww * _BrightnessFactor[3]) >> PWMDEPTH;
+	color[4] = (cw * _BrightnessFactor[4]) >> PWMDEPTH;
 	setOutputRaw(color[0], color[1], color[2], color[3], color[4]);
 }
 
@@ -225,8 +228,9 @@ void RGBWWLed::setOutput(RGBWK c) {
 
  */
 void RGBWWLed::setOutputRaw(int red, int green, int blue, int wwhite, int cwhite) {
-	_pwm_output->setOutput(red, green, blue, wwhite, cwhite);
-
+	if(_pwm_output != NULL) {
+		_pwm_output->setOutput(red, green, blue, wwhite, cwhite);
+	}
 }
 
 
@@ -276,9 +280,7 @@ bool RGBWWLed::show() {
 		_isAnimationActive = true;
 	}
 
-
 	if (_currentAnimation->run()) {
-		//DEBUG("finished animation");
 		cleanupCurrentAnimation();
 	}
 
@@ -387,6 +389,34 @@ bool RGBWWLed::isAnimationQFull() {
                     COLORUTILS
  **************************************************************/
 
+ void RGBWWLed::whiteBalance(RGBWK& rgbw, int& ww, int& cw) {
+	switch(_colormode) {
+	case RGBWWCW:
+		if (_WarmWhiteKelvin <= rgbw.k && _ColdWhiteKelvin >= rgbw.k) {
+			int wwfactor = ((_ColdWhiteKelvin - rgbw.k) << PWMDEPTH) /  (_ColdWhiteKelvin - _WarmWhiteKelvin);
+			//balance between CW and WW Leds
+			ww = (rgbw.w * wwfactor) >> PWMDEPTH;
+			cw = (rgbw.w * (1 - wwfactor)) >> PWMDEPTH;
+		} else {
+			ww = rgbw.w/2;
+			cw = rgbw.w/2;
+		}
+		// if kelvin outside range - different calculation algorithm
+		// for now we asume a neutral white (i.e 0.5 CW, 0.5 WW)
+		break;
+	case RGBCW:
+		//TODO implement valid algorithm
+		break;
+		
+	case RGBWW:
+		//TODO implement valid algorithm
+		break;
+		
+	case RGB:
+		//TODO implement valid algorithm
+		break;
+	}
+ }
 
 
 void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw) {
@@ -444,10 +474,10 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 	//sat = hsv.s;
 
 	rgbw.k = hsv.k;
-	//DEBUG("==  HSV2RGB  ==");
-	//DEBUG("HUE ", hue);
-	//DEBUG("SAT ", sat);
-	//DEBUG("VAL ", val);
+	//debugRGBW("==  HSV2RGB  ==");
+	//debugRGBW("HUE %i", hue);
+	//debugRGBW("SAT %i", sat);
+	//debugRGBW("VAL %i", val);
 	if(sat == 0) {
 		/* color is grayscale */
 		if (_colormode == RGB) {
@@ -481,11 +511,11 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 		 */
 		chroma = (sat * val)/PWMMAXVAL;
 		m = val - chroma;
-		//DEBUG("CHR ",chroma);
-		//DEBUG("M   ", m);
-		//DEBUG("===============");
+		//debugRGBW("CHR %i",chroma);
+		//debugRGBW("M   %i", m);
+		//debugRGBW("===============");
 		if ( hue < _HueWheelSector[0] || (hue > _HueWheelSector[5] && hue <= _HueWheelSector[6])) {
-			//DEBUG("Sector 6");
+			//debugRGBW("Sector 6");
 			if (hue < _HueWheelSector[0]) {
 				fract = PWMMAXVAL + hue ;
 			} else {
@@ -494,13 +524,13 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 			r = chroma;
 			g = 0;
-			//DEBUG(fract);
-			//DEBUG(_HueWheelSectorWidth[5]);
+			//debugRGBW("%i", fract);
+			//debugRGBW("%i",_HueWheelSectorWidth[5]);
 			b = ( chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[5])) >> PWMDEPTH;
 
 		} else if (  hue <= _HueWheelSector[1]  || hue > _HueWheelSector[6]) {
 			// Sector 1
-			//DEBUG("Sector 1");
+			//debugRGBW("Sector 1");
 			if (hue > _HueWheelSector[6]) {
 				fract = hue - _HueWheelSector[6];
 			} else {
@@ -512,7 +542,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else if (hue <= _HueWheelSector[2]) {
 			// Sector 2
-			//DEBUG("Sector 2");
+			//debugRGBW("Sector 2");
 			fract = hue - _HueWheelSector[1];
 			r = (chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[1])) >> PWMDEPTH;
 			g = chroma;
@@ -520,7 +550,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else if (hue <= _HueWheelSector[3]) {
 			// Sector 3
-			//DEBUG("Sector 3");
+			//debugRGBW("Sector 3");
 			fract = hue - _HueWheelSector[2];
 			r = 0;
 			g = chroma;
@@ -528,7 +558,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else if (hue <= _HueWheelSector[4]) {
 			// Sector 4
-			//DEBUG("Sector 4");
+			//debugRGBW("Sector 4");
 			fract = hue - _HueWheelSector[3];
 			r = 0;
 			g =(chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[3])) >> PWMDEPTH;
@@ -536,7 +566,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else  {
 			// Sector 5
-			//DEBUG("Sector 5");
+			//debugRGBW("Sector 5");
 			fract = hue - _HueWheelSector[4];
 			r = (chroma * ((PWMMAXVAL * fract) / _HueWheelSectorWidth[4])) >> PWMDEPTH;
 			g = 0;
@@ -551,30 +581,30 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 			rgbw.b = b + m;
 			rgbw.w = 0; // otherwise might be undefined!
 
-			//DEBUG("===============");
-			//DEBUG("R ", rgbw.r);
-			//DEBUG("G ", rgbw.g);
-			//DEBUG("B ", rgbw.b);
-			//DEBUG("===============");
+			//debugRGBW("===============");
+			//debugRGBW("R i%", rgbw.r);
+			//debugRGBW("G i%", rgbw.g);
+			//debugRGBW("B i%", rgbw.b);
+			//debugRGBW("===============");
 		} else {
 			rgbw.r = r;
 			rgbw.g = g;
 			rgbw.b = b;
 			rgbw.w = m;
 
-			//DEBUG("===============");
-			//DEBUG("R ", rgbw.r);
-			//DEBUG("G ", rgbw.g);
-			//DEBUG("B ", rgbw.b);
-			//DEBUG("W ", rgbw.w);
-			//DEBUG("===============");
+			//debugRGBW("===============");
+			//debugRGBW("R i%", rgbw.r);
+			//debugRGBW("G i%", rgbw.g);
+			//debugRGBW("B i%", rgbw.b);
+			//debugRGBW("W i%", rgbw.w);
+			//debugRGBW("===============");
 		}
 	}
-	//DEBUG("==  //HSV2RGB  ==");
+	//debugRGBW("==  //HSV2RGB  ==");
 }
 
 void  RGBWWLed::RGBtoHSV(const RGBWK& rgbw, HSVK& hsv) {
-	//DEBUG("RGBtoHSV");
+	//debugRGBW("RGBtoHSV");
 
 };
 

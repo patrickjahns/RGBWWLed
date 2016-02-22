@@ -47,7 +47,7 @@ int	PWMOutput::getFrequency() {
 void PWMOutput::setRed(int value, bool update /* = true */) {
 	
 	int duty = parseDuty(value);
-	//debugf("RED - new duty %i, old duty %i channel %i", duty, getRed(), COLORS::RED);
+	//debugRGBW("RED - new duty %i, old duty %i channel %i", duty, getRed(), COLORS::RED);
 	if (duty != getRed()) {
         pwm_set_duty(duty, COLORS::RED);
         _duty[COLORS::RED] = pwm_get_duty(COLORS::RED);
@@ -64,7 +64,7 @@ int	PWMOutput::getRed(){
 
 void PWMOutput::setGreen(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-	//debugf("GREEN - new duty %i, old duty %i channel %i", duty, getBlue(), COLORS::BLUE);
+	//debugRGBW("GREEN - new duty %i, old duty %i channel %i", duty, getBlue(), COLORS::BLUE);
     if (duty != getGreen()) {
         pwm_set_duty(duty, COLORS::GREEN);
         _duty[COLORS::GREEN] = pwm_get_duty(COLORS::GREEN);
@@ -80,7 +80,7 @@ int	PWMOutput::getGreen() {
 
 void PWMOutput::setBlue(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-	//debugf("BLUE - new duty %i, old duty %i channel %i", duty, getGreen(), COLORS::GREEN);
+	//debugRGBW("BLUE - new duty %i, old duty %i channel %i", duty, getGreen(), COLORS::GREEN);
     if (duty != getBlue()) {
         pwm_set_duty(duty, COLORS::BLUE);
         _duty[COLORS::BLUE] = pwm_get_duty(COLORS::BLUE);
@@ -96,7 +96,7 @@ int PWMOutput::getBlue(){
 
 void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-    //debugf("WW - new duty %i, old duty %i channel %i", duty, getWarmWhite(), COLORS::WW);
+    //debugRGBW("WW - new duty %i, old duty %i channel %i", duty, getWarmWhite(), COLORS::WW);
 	if (duty != getWarmWhite()) {
         pwm_set_duty(duty, COLORS::WW);
         _duty[COLORS::WW] = pwm_get_duty(COLORS::WW);
@@ -112,7 +112,7 @@ int	PWMOutput::getWarmWhite() {
 
 void PWMOutput::setColdWhite(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-	//debugf("CW - new duty %i, old duty %i channel %i", duty, getColdWhite(), COLORS::CW);
+	//debugRGBW("CW - new duty %i, old duty %i channel %i", duty, getColdWhite(), COLORS::CW);
     if (duty != getColdWhite()) {
         pwm_set_duty(duty, COLORS::CW);
         _duty[COLORS::CW] = pwm_get_duty(COLORS::CW);
