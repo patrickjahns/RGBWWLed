@@ -35,3 +35,6 @@ codeblocks/
 *.depend
 *.layout
 
+# eclipse project files
+.cproject
+.project
