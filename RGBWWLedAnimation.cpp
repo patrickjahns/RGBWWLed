@@ -3,7 +3,27 @@
 #include "RGBWWLedColor.h"
 
 /**************************************************************
-                HSV Transition
+ *               HSVSetOutput
+ **************************************************************/
+
+HSVSetOutput::HSVSetOutput(const HSVK& color, RGBWWLed* led){
+	outputcolor = color;
+	rgbled = led;
+}
+
+bool HSVSetOutput::run() {
+	return run(0);
+}
+
+bool HSVSetOutput::run(int step) {
+	rgbled->setOutput(outputcolor);
+	return true;
+}
+
+
+
+/**************************************************************
+ *               HSV Transition
  **************************************************************/
 
 HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& direction, RGBWWLed* led ) {

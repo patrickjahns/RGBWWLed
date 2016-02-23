@@ -41,6 +41,20 @@ public:
 	virtual ~RGBWWLedAnimation() {};
 };
 
+class HSVSetOutput: public RGBWWLedAnimation
+{
+public:
+	HSVSetOutput() {};
+	HSVSetOutput(const HSVK& color, RGBWWLed* rgbled);
+	void        init();
+	bool        run();
+	bool        run(int st);
+
+private:
+	RGBWWLed*    rgbled;
+	HSVK         outputcolor;
+};
+
 class HSVTransition: public RGBWWLedAnimation
 {
 public:
