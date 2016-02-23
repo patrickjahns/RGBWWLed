@@ -291,6 +291,10 @@ bool RGBWWLed::show() {
 
 	if (_currentAnimation->run()) {
 		cleanupCurrentAnimation();
+		//callback animation finished
+		if(_animationcallback != NULL ){
+			_animationcallback(this);
+		}
 	}
 
 	return false;
@@ -307,6 +311,10 @@ void    RGBWWLed::clearAnimationQueue() {
 	if (_isAnimationActive) {
 		_clearAnimationQueue = true;
 	}
+}
+
+void RGBWWLed::setAnimationCallback( void (*func)(void) ) {
+  _animationcallback = func;
 }
 
 

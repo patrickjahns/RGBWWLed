@@ -86,6 +86,7 @@ public:
 	void    	setHSV(HSVK& color, int time, bool q);
 	void    	setHSV(HSVK& color, int time, int direction, bool q);
 	void    	setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
+	void		setAnimationCallback( void (*func)(void) );
 	bool    	isAnimationQFull();
 	void    	skipAnimation();
 	void    	clearAnimationQueue();
@@ -125,6 +126,7 @@ private:
 	bool            _cancelAnimation;
 	bool            _clearAnimationQueue;
 	bool            _isAnimationActive;
+	void (*_animationcallback)(void) = NULL;
 
 	RGBWWLedAnimation*  	_currentAnimation;
 	RGBWWLedAnimationQ*  	_animationQ;
