@@ -392,6 +392,10 @@ bool RGBWWLed::isAnimationQFull() {
 	return _animationQ->isFull();
 }
 
+bool RGBWWLed::isAnimationActive() {
+	return _isAnimationActive;
+}
+
 /**************************************************************
                     COLORUTILS
  **************************************************************/

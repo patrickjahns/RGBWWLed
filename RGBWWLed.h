@@ -87,6 +87,7 @@ public:
 	void    	setHSV(HSVK& color, int time, int direction, bool q);
 	void    	setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
 	void		setAnimationCallback( void (*func)(void) );
+	bool		isAnimationActive();
 	bool    	isAnimationQFull();
 	void    	skipAnimation();
 	void    	clearAnimationQueue();
