@@ -326,50 +326,40 @@ void RGBWWLed::setHSV(HSVK& color, int time, int direction) {
 
 void RGBWWLed::setHSV(HSVK& color, int time, int direction, bool q) {
 	if (time == 0 || time < MINTIMEDIFF) {
-		// no transition time - directly set the color
-		setOutput(color);
-	} else {
-		// Fix fading from off to on with different HUE
-		//colorFrom.h = (colorFrom.v == 0 && color.h != colorFrom.h) ? color.h : colorFrom.h;
-		if (q) {
-			// using queue
-			_animationQ->push(new HSVTransition(color, time, direction, this));
-
-		} else {
-
-			// not using queue up -> clear the queue first
+		// no animation - setting color directly
+		if (!q) {
 			clearAnimationQ();
-			// clear any running animation
 			cleanupCurrentAnimation();
-			_currentAnimation = new HSVTransition(color, time, direction, this);
-			_isAnimationActive = true;
 		}
+		_animationQ->push(new HSVSetOutput(color, this));
 
+	} else {
+		if (!q) {
+			clearAnimationQ();
+			cleanupCurrentAnimation();
+		}
+		_animationQ->push(new HSVTransition(color, time, direction, this));
 	}
 }
 
 void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction, bool q ) {
 	// only change color if it is different
 	if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  || colorFrom.k != color.k  ) {
+
 		if (time == 0 || time < MINTIMEDIFF) {
-			// no transition time - directly set the color
-			setOutput(color);
-		} else {
-			// Fix fading from off to on with different HUE
-			//colorFrom.h = (colorFrom.v == 0 && color.h != colorFrom.h) ? color.h : colorFrom.h;
-			if (q) {
-				// using queue
-				_animationQ->push(new HSVTransition(colorFrom, color, time, direction, this));
-
-			} else {
-
-				// not using queue up -> clear the queue first
+			// no animation - setting color directly
+			if (!q) {
 				clearAnimationQ();
-				// clear any running animation
 				cleanupCurrentAnimation();
-				_currentAnimation = new HSVTransition(colorFrom, color, time, direction, this);
-				_isAnimationActive = true;
 			}
+			_animationQ->push(new HSVSetOutput(color, this));
+
+		} else {
+			if (!q) {
+				clearAnimationQ();
+				cleanupCurrentAnimation();
+			}
+			_animationQ->push(new HSVTransition(colorFrom, color, time, direction, this));
 
 		}
 	}
