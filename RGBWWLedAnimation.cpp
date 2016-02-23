@@ -161,7 +161,7 @@ RGBWWLedAnimationQ::~RGBWWLedAnimationQ(){
 	//cleanup 
 	RGBWWLedAnimation* animation;
 	while(!isEmpty()) {
-		animation = q.pop;
+		animation = pop();
 		if (animation != NULL) {
 			delete animation;
 		}

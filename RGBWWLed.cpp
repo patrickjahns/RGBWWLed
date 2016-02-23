@@ -20,12 +20,12 @@ RGBWWLed::RGBWWLed() {
 	_clearAnimationQueue = false;
 	_colormode = RGB;
 	_current_color = HSVK(0, 0, 0);
-	_currentAnimation = NULL;
 	_hsvmode = NORMAL;
-	_animationQ = new RGBWWLedAnimationQ(ANIMATIONQSIZE);
-	_pwm_output = NULL;
 	_WarmWhiteKelvin = WARMWHITEKELVIN;
 	_ColdWhiteKelvin = COLDWHITEKELVIN;
+	_currentAnimation = NULL;
+	_animationQ = new RGBWWLedAnimationQ(ANIMATIONQSIZE);
+	_pwm_output = NULL;
 	createHueWheel();
 	setBrightnessCorrection(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
 }
