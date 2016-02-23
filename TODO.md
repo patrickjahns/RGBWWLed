@@ -1,8 +1,7 @@
 # TODOs
 - General
   - [ ] code cleanup and refactoring
-  - [ ] refactor to provide callback function when an Animation has finished 
-    The idea is to allow saving of the last value/state of the animation
+
 
 - ColorUtils
   - [ ] white balance calculations (preliminary interface available)
@@ -21,7 +20,9 @@
 # DONE
 - General
   - [x] change colormode of controller (RGB, RGBWW, RGBCW, RGBWWCW)
-
+  - [x] refactor to provide callback function when an Animation has finished 
+    The idea is to allow saving of the last value/state of the animation
+    
 - Color Utils
   - [x] HSV -> RGB conversion
   - [x] Adjustment for HSV base colors (yellow, green, magenta, blue, cyan, red)
