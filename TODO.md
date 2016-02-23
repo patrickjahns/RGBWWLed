@@ -1,6 +1,8 @@
 # TODOs
 - General
   - [ ] code cleanup and refactoring
+  - [ ] refactor to provide callback function when an Animation has finished 
+    The idea is to allow saving of the last value/state of the animation
 
 - ColorUtils
   - [ ] white balance calculations (preliminary interface available)
