@@ -81,21 +81,21 @@ HSVMODE RGBWWLed::getHSVmode() {
     @param wm warm white channel (0.0 - 1.0)
 
  */
-void RGBWWLed::setBrightnessCorrection(float r, float g, float b, float ww, float cw) {
-	_BrightnessFactor[0] = constrain(r, 0.0, 1.0) * PWMWIDTH;
-	_BrightnessFactor[1] = constrain(g, 0.0, 1.0) * PWMWIDTH;
-	_BrightnessFactor[2] = constrain(b, 0.0, 1.0) * PWMWIDTH;
-	_BrightnessFactor[3] = constrain(cw, 0.0, 1.0) * PWMWIDTH;
-	_BrightnessFactor[4] = constrain(ww, 0.0, 1.0) * PWMWIDTH;
+void RGBWWLed::setBrightnessCorrection(int r, int g, int b, int ww, int cw) {
+	_BrightnessFactor[0] = (constrain(r, 0, 100)/100) * PWMWIDTH;
+	_BrightnessFactor[1] = (constrain(g, 0, 100)/100) * PWMWIDTH;
+	_BrightnessFactor[2] = (constrain(b, 0, 100)/100) * PWMWIDTH;
+	_BrightnessFactor[3] = (constrain(cw, 0, 100)/100) * PWMWIDTH;
+	_BrightnessFactor[4] = (constrain(ww, 0, 100)/100) * PWMWIDTH;
 
 };
 
 void RGBWWLed::getBrightnessCorrection(float& r, float& g, float& b, float& ww, float& cw) {
-	r = float(_BrightnessFactor[0]/PWMWIDTH);
-	g = float(_BrightnessFactor[1]/PWMWIDTH);
-	b = float(_BrightnessFactor[2]/PWMWIDTH);
-	ww = float(_BrightnessFactor[3]/PWMWIDTH);
-	cw = float(_BrightnessFactor[4]/PWMWIDTH);
+	r = _BrightnessFactor[0]/PWMWIDTH;
+	g = _BrightnessFactor[1]/PWMWIDTH;
+	b = _BrightnessFactor[2]/PWMWIDTH;
+	ww = _BrightnessFactor[3]/PWMWIDTH;
+	cw = _BrightnessFactor[4]/PWMWIDTH;
 }
 
 
@@ -114,7 +114,6 @@ void RGBWWLed::getBrightnessCorrection(float& r, float& g, float& b, float& ww, 
 void RGBWWLed::setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta) {
 	// reset color wheel before applying any changes
 	// otherwise we apply changes to any previous colorwheel
-	//TODO: write unit test
 	createHueWheel();
 	/*
 	debugRGBW("==  correctHSV  ==");
@@ -481,7 +480,6 @@ void RGBWWLed::HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw) {
  */
 void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 	int val, hue, sat, r, g, b, fract, chroma, m;
-	//TODO: write unit test
 
 	hue = hsv.h;
 	//gamma correction

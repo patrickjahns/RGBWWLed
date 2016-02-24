@@ -31,12 +31,6 @@
 #include "RGBWWLedAnimation.h"
 #include "RGBWWLedOutput.h"
 
-/** TODOS
-
-- check why s!=0 and v=0 still lets white glow
-- backward compatibility with arduino esp framework check
-
-*/
 
 enum COLORMODE {
 	RGB,
@@ -68,8 +62,8 @@ public:
 	void    	init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
 	void    	setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
 	void    	getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
-	void    	setBrightnessCorrection(float r, float g, float b, float ww, float cw);
-	void    	getBrightnessCorrection(float& r, float& g, float& b, float& ww, float& cw);
+	void    	setBrightnessCorrection(int r, int g, int b, int ww, int cw);
+	void    	getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
 
 
 	//output related
