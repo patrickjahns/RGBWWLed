@@ -56,7 +56,7 @@ void HSVTransition::init() {
 	int l, r, d;
 	//debugRGBW("==   HSVT INIT   =====");
 	if (!_hasbasecolor) {
-		_basecolor = rgbled->getCurrenctColor();
+		_basecolor = rgbled->getCurrentColor();
 	}
 	_currentcolor = _basecolor;
 	// calculate hue direction

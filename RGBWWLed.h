@@ -48,7 +48,7 @@ enum HSVMODE {
 
 class RGBWWLedAnimation;
 class RGBWWLedAnimationQ;
-class WMOutput;
+class PWMOutput;
 
 class RGBWWLed
 {
