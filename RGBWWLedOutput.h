@@ -17,16 +17,14 @@ enum COLORS {
 	NUM_COLORS = 5
 };
 
-#ifdef SMING_VERSION
+#ifdef USE_ESP_HWPWM
 
-//#include <HardwarePWM.h>
-#ifdef __cplusplus
 extern "C" {
-#endif
 #include <pwm.h>
-#ifdef __cplusplus
 }
-#endif
+
+
+
 class PWMOutput
 {
 
@@ -58,7 +56,8 @@ private:
 };
 
 #else
-	class PWMOutput
+
+class PWMOutput
 	{
 
 	public:
@@ -85,7 +84,7 @@ private:
 		int			_duty[5];
 		
 };
-#endif //SMING_VERSION
+#endif //USE_ESP_HWPWM
 
 
 #endif //RGBWWLedOutput_h

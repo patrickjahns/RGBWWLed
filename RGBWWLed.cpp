@@ -90,7 +90,7 @@ void RGBWWLed::setBrightnessCorrection(int r, int g, int b, int ww, int cw) {
 
 };
 
-void RGBWWLed::getBrightnessCorrection(float& r, float& g, float& b, float& ww, float& cw) {
+void RGBWWLed::getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw) {
 	r = _BrightnessFactor[0]/PWMWIDTH;
 	g = _BrightnessFactor[1]/PWMWIDTH;
 	b = _BrightnessFactor[2]/PWMWIDTH;
@@ -267,16 +267,16 @@ bool RGBWWLed::show() {
 		}
 	}
 
-#ifdef ESP8266
-	//TODO: make this look nicer for SMING
-	long now = millis();
-	if (now - last_active < MINTIMEDIFF) {
-		// Interval hasn't passed yet
-		return true;
-	}
+	#ifdef ARDUINO
+		//only need this part when using arduino
+		long now = millis();
+		if (now - last_active < MINTIMEDIFF) {
+			// Interval hasn't passed yet
+			return true;
+		}
 
-	last_active = now;
-#endif // ESP8266
+		last_active = now;
+	#endif // ARDUINO
 	// Interval has passed
 	// check if we need to animate or there is any new animation
 	if (!_isAnimationActive) {
@@ -292,6 +292,7 @@ bool RGBWWLed::show() {
 		cleanupCurrentAnimation();
 		//callback animation finished
 		if(_animationcallback != NULL ){
+			DEBUG_RGB("RGBWW callback ");
 			_animationcallback(this);
 		}
 	}
@@ -299,6 +300,7 @@ bool RGBWWLed::show() {
 	return false;
 
 }
+
 
 void    RGBWWLed::skipAnimation(){
 	if (_isAnimationActive) {
@@ -312,7 +314,7 @@ void    RGBWWLed::clearAnimationQueue() {
 	}
 }
 
-void RGBWWLed::setAnimationCallback( void (*func)(void) ) {
+void RGBWWLed::setAnimationCallback( void (*func)(RGBWWLed* led) ) {
   _animationcallback = func;
 }
 

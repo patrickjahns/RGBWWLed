@@ -7,7 +7,7 @@
 #include "RGBWWLed.h"
 #include "RGBWWLedOutput.h"
 
-#ifdef SMING_VERSION
+#ifdef USE_ESP_HWPWM
 /****************************************************************
  	SMING -> we can use hardware pwm from ESP
  ***************************************************************/
@@ -143,7 +143,7 @@ int PWMOutput::parseDuty(int duty) {
 #else
 
 /******************************************************
- * 	NOT SMING => we use Arduino ESP framework pwm
+ * 	NOT ESP HW_PWM => we use Arduino ESP framework pwm
  ******************************************************/
 PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq) {
 
@@ -227,4 +227,4 @@ void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldw
 
 
 
-#endif //SMING_VERSION
+#endif //USE_ESP_HWPWM

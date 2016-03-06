@@ -9,7 +9,7 @@
 #define RGBWWLed_h
 
 
-//TODO: move defines to global header file
+#define RGBWW_VERSION "0.5"
 #define PWMDEPTH 10
 #define PWMWIDTH int(pow(2, PWMDEPTH))
 #define	PWMMAXVAL int(PWMWIDTH - 1)
@@ -25,6 +25,7 @@
 #ifndef ARDUINO
 	#include "../../SmingCore/SmingCore.h"
 #endif
+#define USE_ESP_HWPWM
 #define DEBUG_RGB
 #include "debugUtils.h"
 #include "RGBWWLedColor.h"
@@ -33,16 +34,16 @@
 
 
 enum COLORMODE {
-	RGB,
-	RGBWW,
-	RGBCW,
-	RGBWWCW
+	RGB = 0,
+	RGBWW = 1,
+	RGBCW = 2,
+	RGBWWCW = 3
 };
 
 enum HSVMODE {
-	NORMAL,
-	SPEKTRUM,
-	RAINBOW
+	NORMAL = 0,
+	SPEKTRUM = 1,
+	RAINBOW = 2
 };
 
 class RGBWWLedAnimation;
@@ -80,7 +81,7 @@ public:
 	void    	setHSV(HSVK& color, int time, bool q);
 	void    	setHSV(HSVK& color, int time, int direction, bool q);
 	void    	setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
-	void		setAnimationCallback( void (*func)(void) );
+	void		setAnimationCallback( void (*func)(RGBWWLed* led) );
 	bool		isAnimationActive();
 	bool    	isAnimationQFull();
 	void    	skipAnimation();
@@ -121,7 +122,7 @@ private:
 	bool            _cancelAnimation;
 	bool            _clearAnimationQueue;
 	bool            _isAnimationActive;
-	void (*_animationcallback)(void) = NULL;
+	void (*_animationcallback)(RGBWWLed* led) = NULL;
 
 	RGBWWLedAnimation*  	_currentAnimation;
 	RGBWWLedAnimationQ*  	_animationQ;
