@@ -39,6 +39,8 @@ public:
 	virtual bool run() {return true;};
 	virtual bool run(int st) {return true;};
 	virtual ~RGBWWLedAnimation() {};
+	virtual void setSpeed(int newspeed) {};
+	virtual void setBrightness(int newbrightness) {};
 };
 
 class HSVSetOutput: public RGBWWLedAnimation
@@ -49,6 +51,7 @@ public:
 	void        init();
 	bool        run();
 	bool        run(int st);
+
 
 private:
 	RGBWWLed*    rgbled;

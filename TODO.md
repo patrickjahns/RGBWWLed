@@ -10,6 +10,8 @@
 
 - Animations
   - [ ] extend animation interface for effects (lower/faster/brighter/darker/color settings)
+  	- [x] method for brighter/darker
+  	- [x] method for faster/slower
   - [ ] create standard animations 
 
 - RGB controls

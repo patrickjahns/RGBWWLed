@@ -86,6 +86,8 @@ public:
 	bool    	isAnimationQFull();
 	void    	skipAnimation();
 	void    	clearAnimationQueue();
+	void		setAnimationSpeed(int speed);
+	void		setAnimationBrightness(int brightness);
 
 
 	//colorutils

@@ -302,13 +302,13 @@ bool RGBWWLed::show() {
 }
 
 
-void    RGBWWLed::skipAnimation(){
+void RGBWWLed::skipAnimation(){
 	if (_isAnimationActive) {
 		_cancelAnimation = true;
 	}
 }
 
-void    RGBWWLed::clearAnimationQueue() {
+void RGBWWLed::clearAnimationQueue() {
 	if (_isAnimationActive) {
 		_clearAnimationQueue = true;
 	}
@@ -318,6 +318,16 @@ void RGBWWLed::setAnimationCallback( void (*func)(RGBWWLed* led) ) {
   _animationcallback = func;
 }
 
+void RGBWWLed::setAnimationSpeed(int speed) {
+	if(_currentAnimation != NULL) {
+		_currentAnimation->setSpeed(speed);
+	}
+}
+void RGBWWLed::setAnimationBrightness(int brightness){
+	if(_currentAnimation != NULL) {
+			_currentAnimation->setBrightness(brightness);
+		}
+}
 
 void RGBWWLed::setHSV(HSVK& color) {
 	setHSV( color, 0, 1, false);
