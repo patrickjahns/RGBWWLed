@@ -73,7 +73,7 @@ public:
 	void    	setOutput(HSVK color);
 	void    	setOutput(RGBWK color);
 	void    	setOutputRaw(int red, int green, int blue, int cwhite, int wwhite);
-	HSVK    	getCurrenctColor();
+	HSVK    	getCurrentColor();
 
 	//animation related
 	void    	setHSV(HSVK& color);

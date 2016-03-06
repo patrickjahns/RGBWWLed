@@ -201,11 +201,11 @@ void RGBWWLed::getHSVcorrection(float& red, float& yellow, float& green, float& 
  **************************************************************/
 
 void RGBWWLed::refresh() {
-	setOutput(getCurrenctColor());
+	setOutput(getCurrentColor());
 }
  
  
-HSVK RGBWWLed::getCurrenctColor() {
+HSVK RGBWWLed::getCurrentColor() {
 	return _current_color;
 }
 
