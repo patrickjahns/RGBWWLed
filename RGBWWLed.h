@@ -67,7 +67,6 @@ public:
 	virtual 		~RGBWWLed();
 	void    		init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
 
-	//color configuration
 
 	//output related
 	bool    	show();
@@ -91,6 +90,10 @@ public:
 	void		setAnimationSpeed(int speed);
 	void		setAnimationBrightness(int brightness);
 
+	//color configuration
+	RGBWWColorUtils*	colorutils;
+
+
 private:
 	unsigned long   last_active;
 	HSVK            _current_color;
@@ -102,7 +105,7 @@ private:
 	RGBWWLedAnimation*  	_currentAnimation;
 	RGBWWLedAnimationQ*  	_animationQ;
 	PWMOutput*				_pwm_output;
-	RGBWWColorUtils*		_color_utils;
+
 	void (*_animationcallback)(RGBWWLed* led) = NULL;
 
 	//helpers

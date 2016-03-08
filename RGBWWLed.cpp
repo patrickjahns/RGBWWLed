@@ -37,12 +37,13 @@ RGBWWLed::RGBWWLed() {
 	_current_color = HSVK(0, 0, 0);
 	_currentAnimation = NULL;
 	_animationQ = new RGBWWLedAnimationQ(RGBWW_ANIMATIONQSIZE);
-	_color_utils = new RGBWWColorUtils();
+	colorutils = new RGBWWColorUtils();
 	_pwm_output = NULL;
 
 }
 
 RGBWWLed::~RGBWWLed() {
+	delete colorutils;
 	delete _animationQ;
 	if (_currentAnimation != NULL) {
 		delete _currentAnimation;
@@ -50,6 +51,7 @@ RGBWWLed::~RGBWWLed() {
 	if (_pwm_output != NULL) {
 		delete _pwm_output;
 	}
+
 }
 
 void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency /* =200 */) {
@@ -76,7 +78,7 @@ HSVK RGBWWLed::getCurrentColor() {
 void RGBWWLed::setOutput(HSVK color) {
 	RGBWK rgbw;
 	_current_color = color;
-	_color_utils->HSVtoRGB(color, rgbw);
+	colorutils->HSVtoRGB(color, rgbw);
 	setOutput(rgbw);
 
 }
@@ -84,7 +86,7 @@ void RGBWWLed::setOutput(HSVK color) {
 void RGBWWLed::setOutput(RGBWK c) {
 	int color[5];
 	int ww, cw;
-	_color_utils->whiteBalance(c, ww, cw);
+	colorutils->whiteBalance(c, ww, cw);
 	color[RGBWW_COLORS::RED] = c.r;
 	color[RGBWW_COLORS::GREEN] = c.g;
 	color[RGBWW_COLORS::BLUE] = c.b;
