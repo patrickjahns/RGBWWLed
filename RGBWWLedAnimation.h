@@ -29,6 +29,10 @@
 class RGBWWLed;
 class RGBWWLedAnimation;
 
+/**
+ * A simple queue implementation
+ *
+ */
 class RGBWWLedAnimationQ
 {
 public:
@@ -41,14 +45,14 @@ public:
 	 *
 	 * @return	bool
 	 */
-	bool                isEmpty();
+	bool isEmpty();
 
 	/**
 	 * Check if the queue is full
 	 *
 	 * @return	BOOL
 	 */
-	bool                isFull();
+	bool isFull();
 
 	/**
 	 * Add an animation to the queue
@@ -58,12 +62,12 @@ public:
 	 * @retval 	true 	successfully inserted object queue
 	 * @retval	false	did not insert object into queue
 	 */
-	bool                push(RGBWWLedAnimation* animation);
+	bool push(RGBWWLedAnimation* animation);
 
 	/**
 	 * Empty Queue and delete all objects stored
 	 */
-	void				clear();
+	void clear();
 
 	/**
 	 * Returns first Animation object pointer but keeps it in the queue
@@ -86,69 +90,132 @@ private:
 
 };
 
+/**
+ * Abstract class representing the interface for animations
+ *
+ */
 class RGBWWLedAnimation
 {
 public:
-	virtual bool run() {return true;};
-	virtual bool run(int st) {return true;};
+
+
 	virtual ~RGBWWLedAnimation() {};
+	/**
+	 * Main method that will be called from processing loop
+	 * Output/Calculation steps should be done here
+	 *
+	 * @return bool		value representing the status of the animation
+	 * @retval true		the animation is finished
+	 * @retval false 	the animation is not finished yet
+	 */
+	virtual bool run() {return true;};
+
+
+	/**
+	 * Generic interface method for changing a variable
+	 * representing the speed of the animation
+	 *
+	 * @param newspeed
+	 */
 	virtual void setSpeed(int newspeed) {};
+
+	/**
+	 * Generic interface method for changing a variable
+	 * representing the brightness of the animation
+	 *
+	 * @param newbrightness
+	 */
 	virtual void setBrightness(int newbrightness) {};
 };
 
+/**
+ * Simple Animation Object to set the output to a certain color
+ * without effects/transition
+ *
+ */
 class HSVSetOutput: public RGBWWLedAnimation
 {
 public:
-	HSVSetOutput() {};
+
+	/**
+	 * Simple Animation Object to set the output to a certain color
+	 * without effects/transition
+	 *
+	 * @param color New color to show
+	 * @param ctrl	Pointer to RGBWWLed controller objekt
+	 */
 	HSVSetOutput(const HSVK& color, RGBWWLed* rgbled);
-	void        init();
-	bool        run();
-	bool        run(int st);
+	bool run();
 
 
 private:
-	RGBWWLed*    rgbled;
-	HSVK         outputcolor;
+	RGBWWLed* rgbwwctrl;
+	HSVK outputcolor;
 };
 
+
+
+/**
+ * A simple Colorfade animation using HSV
+ *
+ */
 class HSVTransition: public RGBWWLedAnimation
 {
 public:
-	HSVTransition() {};
-	HSVTransition(const HSVK& color, const int& tm, const int& direction, RGBWWLed* rgbled);
-	HSVTransition(const HSVK& colorFrom, const HSVK& color, const int& tm, const int& direction, RGBWWLed* rgbled);
 
-	bool        run();
-	bool        run(int st);
+	/**
+	 * Simple Anination to fade from the current color to another color (colorFinish)
+	 * There are two options for the direction of the fade (short way/ long way)
+	 *
+	 * @param colorFinish	color where the animation should end
+	 * @param time			the amount of time the animation takes in ms
+	 * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
+	 * @param ctrl			main rgbww objekt
+	 */
+	HSVTransition(const HSVK& colorFinish, const int& time, const int& direction, RGBWWLed* ctrl);
+
+	/**
+	 * Simple Anination to fade from one color (colorFrom) to another color (colorFinish)
+	 * There are two options for the direction of the fade (short way/ long way)
+	 *
+	 * @param colorFrom		color from which the animation should start
+	 * @param colorFinish	color where the animation should end
+	 * @param time			the amount of time the animation takes in ms
+	 * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
+	 * @param ctrl			main rgbww objekt
+	 */
+	HSVTransition(const HSVK& colorFrom, const HSVK& colorFinish, const int& time, const int& direction, RGBWWLed* ctrl);
+
+	bool run();
 
 private:
 	void        init();
 
-	HSVK        _basecolor;
-	HSVK        _currentcolor;
-	HSVK        _finalcolor;
-	bool        _hasbasecolor;
-	int         _currentstep;
-	int         _steps;
-	int         _huedirection;
-	int         _dhue;
-	int         _hueerror;
-	int         _huecount;
-	int         _huestep;
-	int         _dsat;
-	int         _saterror;
-	int         _satcount;
-	int         _satstep;
-	int         _dval;
-	int         _valerror;
-	int         _valcount;
-	int         _valstep;
-	int         _dkelvin;
-	int         _kelvinerror;
-	int         _kelvincount;
-	int         _kelvinstep;
+	HSVK	_basecolor;
+	HSVK	_currentcolor;
+	HSVK	_finalcolor;
+	bool	_hasbasecolor;
+	int	_currentstep;
+	int _steps;
+	int _huedirection;
+	int	_dhue;
+	int _hueerror;
+	int _huecount;
+	int _huestep;
+	int _dsat;
+	int _saterror;
+	int _satcount;
+	int _satstep;
+	int _dval;
+	int _valerror;
+	int _valcount;
+	int _valstep;
+	int _dkelvin;
+	int _kelvinerror;
+	int _kelvincount;
+	int _kelvinstep;
 
-	RGBWWLed*    rgbled;
+	RGBWWLed*    rgbwwctrl;
 
 	static 	int	bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, int& base, int& current);
 

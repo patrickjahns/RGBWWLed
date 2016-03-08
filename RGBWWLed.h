@@ -44,7 +44,7 @@
 #endif
 
 #ifndef DEBUG_RGBWW
-	#define DEBUG_RGBWW false
+	#define DEBUG_RGBWW TRUE
 #endif
 
 #include "debugUtils.h"
@@ -64,7 +64,7 @@ class RGBWWLed
 public:
 	//init & settings
 	RGBWWLed();
-	virtual 		~RGBWWLed();
+	virtual	~RGBWWLed();
 
 	/**
 	 * Initialize the the LED Controller
@@ -76,7 +76,7 @@ public:
 	 * @param cwPIN
 	 * @param pwmFrequency (default 200)
 	 */
-	void    		init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
+	void init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
 
 
 	//output related
@@ -89,7 +89,7 @@ public:
 	 * @retval TRUE 	not updating
 	 * @retval FALSE 	updates applied
 	 */
-	bool    	show();
+	bool show();
 
 
 	/**
@@ -97,7 +97,7 @@ public:
 	 * Usefull when changing brightness, white or color correction
 	 *
 	 */
-	void		refresh();
+	void refresh();
 
 
 	/**
@@ -107,7 +107,7 @@ public:
 	 *
 	 * @param HSVK&	outputcolor
 	 */
-	void    	setOutput(HSVK& color);
+	void setOutput(HSVK& color);
 
 
 	/**
@@ -116,7 +116,7 @@ public:
 	 *
 	 * @param RGBWK&	outputcolor
 	 */
-	void    	setOutput(RGBWK& color);
+	void setOutput(RGBWK& color);
 
 
 	/**
@@ -130,7 +130,7 @@ public:
 	 * @param int&	wwhite
 	 * @param int&	cwhite
 	 */
-	void    	setOutputRaw(int& red, int& green, int& blue, int& cwhite, int& wwhite);
+	void setOutputRaw(int& red, int& green, int& blue, int& cwhite, int& wwhite);
 
 
 	/**
@@ -138,14 +138,14 @@ public:
 	 *
 	 * @return HSVK
 	 */
-	HSVK    	getCurrentColor();
+	HSVK getCurrentColor();
 
 	//animation related
-	void    	setHSV(HSVK& color);
-	void    	setHSV(HSVK& color, int time, int direction);
-	void    	setHSV(HSVK& color, int time, bool q);
-	void    	setHSV(HSVK& color, int time, int direction=1, bool q=false);
-	void    	setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
+	void setHSV(HSVK& color);
+	void setHSV(HSVK& color, int time, int direction);
+	void setHSV(HSVK& color, int time, bool q);
+	void setHSV(HSVK& color, int time, int direction=1, bool q=false);
+	void setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
 
 
 	/**
@@ -153,7 +153,7 @@ public:
 	 *
 	 * @param func
 	 */
-	void		setAnimationCallback( void (*func)(RGBWWLed* led) );
+	void setAnimationCallback( void (*func)(RGBWWLed* led) );
 
 
 	/**
@@ -161,25 +161,25 @@ public:
 	 * @return
 	 * @retval true if active
 	 */
-	bool		isAnimationActive();
+	bool isAnimationActive();
 
 
 	/**
 	 * Check if the AnimationQ is full
 	 * @return
 	 */
-	bool    	isAnimationQFull();
+	bool isAnimationQFull();
 
 	/**
 	 * skip the current Animation
 	 */
-	void    	skipAnimation();
+	void skipAnimation();
 
 
 	/**
 	 * Cancel all following Animations
 	 */
-	void    	clearAnimationQueue();
+	void clearAnimationQueue();
 
 
 	/**
@@ -187,36 +187,36 @@ public:
 	 *
 	 * @param speed
 	 */
-	void		setAnimationSpeed(int speed);
+	void setAnimationSpeed(int speed);
 
 
 	/**
 	 * Change the brightness of the current animation
 	 * @param brightness
 	 */
-	void		setAnimationBrightness(int brightness);
+	void setAnimationBrightness(int brightness);
 
-	//color configuration
-	RGBWWColorUtils*	colorutils;
+	//colorutils
+	RGBWWColorUtils* colorutils;
 
 
 private:
-	unsigned long   last_active;
-	HSVK            _current_color;
-	RGBWK           _current_output;
-	bool            _cancelAnimation;
-	bool            _clearAnimationQueue;
-	bool            _isAnimationActive;
+	unsigned long last_active;
+	HSVK 	_current_color;
+	RGBWK   _current_output;
+	bool    _cancelAnimation;
+	bool    _clearAnimationQueue;
+	bool    _isAnimationActive;
 
-	RGBWWLedAnimation*  	_currentAnimation;
-	RGBWWLedAnimationQ*  	_animationQ;
-	PWMOutput*				_pwm_output;
+	RGBWWLedAnimation*  _currentAnimation;
+	RGBWWLedAnimationQ* _animationQ;
+	PWMOutput* _pwm_output;
 
 	void (*_animationcallback)(RGBWWLed* led) = NULL;
 
 	//helpers
-	void    cleanupCurrentAnimation();
-	void    cleanupAnimationQ();
+	void cleanupCurrentAnimation();
+	void cleanupAnimationQ();
 
 };
 

@@ -29,29 +29,19 @@
  **************************************************************/
 
 /**
+ * Simple Animation Object to set the output to a certain color
+ * without effects/transition
  *
- * @param color
- * @param led
+ * @param color New color to show
+ * @param ctrl	Pointer to RGBWWLed controller objekt
  */
-HSVSetOutput::HSVSetOutput(const HSVK& color, RGBWWLed* led){
+HSVSetOutput::HSVSetOutput(const HSVK& color, RGBWWLed* ctrl){
 	outputcolor = color;
-	rgbled = led;
-}
-/**
- *
- * @return
- */
-bool HSVSetOutput::run() {
-	return run(0);
+	rgbwwctrl = ctrl;
 }
 
-/**
- *
- * @param step
- * @return
- */
-bool HSVSetOutput::run(int step) {
-	rgbled->setOutput(outputcolor);
+bool HSVSetOutput::run() {
+	rgbwwctrl->setOutput(outputcolor);
 	return true;
 }
 
@@ -62,14 +52,16 @@ bool HSVSetOutput::run(int step) {
  **************************************************************/
 
 /**
+ * Simple Anination to fade from the current color to another color (colorFinish)
+ * There are two options for the direction of the fade (short way/ long way)
  *
- * @param color
- * @param time
- * @param direction
- * @param led
+ * @param colorFinish	color where the animation should end
+ * @param time			the amount of time the animation takes in ms
+ * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
+ * @param ctrl			main rgbww objekt
  */
 HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& direction, RGBWWLed* ctrl ) {
-	rgbled = ctrl;
+	rgbwwctrl = ctrl;
 	_finalcolor = color;
 	_hasbasecolor = false;
 	_steps = time / RGBWW_MINTIMEDIFF;
@@ -78,16 +70,18 @@ HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& dire
 }
 
 /**
+ * Simple Anination to fade from one color (colorFrom) to another color (colorFinish)
+ * There are two options for the direction of the fade (short way/ long way)
  *
- * @param colorFrom
- * @param color
- * @param tm
- * @param direction
- * @param led
+ * @param colorFrom		color from which the animation should start
+ * @param colorFinish	color where the animation should end
+ * @param time			the amount of time the animation takes in ms
+ * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
+ * @param ctrl			main rgbww objekt
  */
-HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int& tm, const int& direction, RGBWWLed* ctrl ) {
-	rgbled = ctrl;
-	_finalcolor = color;
+HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& colorFinish, const int& tm, const int& direction, RGBWWLed* ctrl ) {
+	rgbwwctrl = ctrl;
+	_finalcolor = colorFinish;
 	_basecolor = colorFrom;
 	_hasbasecolor = true;
 	_steps = tm / RGBWW_MINTIMEDIFF;
@@ -100,7 +94,7 @@ void HSVTransition::init() {
 	int l, r, d;
 	debugRGBW("==   HSVT INIT   =====");
 	if (!_hasbasecolor) {
-		_basecolor = rgbled->getCurrentColor();
+		_basecolor = rgbwwctrl->getCurrentColor();
 	}
 	_currentcolor = _basecolor;
 
@@ -158,37 +152,24 @@ void HSVTransition::init() {
 	debugRGBW("== //HSVT INIT   =====");
 }
 
-/**
- *
- * @return
- */
-bool HSVTransition::run() {
-	return run(1);
-}
 
-/**
- *
- * @param st
- * @return
- */
-
-bool HSVTransition::run (int st) {
+bool HSVTransition::run () {
 	debugRGBW("== HSV RUN =====");
 	if (_currentstep == 0) {
 		init();
 	}
 	_currentstep++;
 	if (_currentstep >= _steps) {
-		// ensure that the with the last step we arrive at the destination color
-		rgbled->setOutput(_finalcolor);
+		// ensure that the with the last step
+		// we arrive at the destination color
+		rgbwwctrl->setOutput(_finalcolor);
 		return true;
 	}
 	
-	/*
-	*	improvement idea: set new value at the beginning and then calculate next step
-	*
-	*/
 	
+	//	improvement idea:
+	//	set new value at the beginning and then calculate next step
+
 	//calculate new colors with bresenham
 	_currentcolor.h = bresenham(_hueerror, _huecount, _steps, _dhue, _huestep, _basecolor.h, _currentcolor.h);
 	//fix hue
@@ -205,12 +186,9 @@ bool HSVTransition::run (int st) {
 	debugRGBW("K", _currentcolor.k);
 	debugRGBW("== //HSV RUN =====");
 
-	rgbled->setOutput(_currentcolor);
+	rgbwwctrl->setOutput(_currentcolor);
 	return false;
 }
-/**
-
- */
 
 /**
  * Bresenham line algorithm modified for calculating dy with dx
@@ -241,7 +219,7 @@ int HSVTransition::bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, 
  **************************************************************/
 
 /**
- * A simple Queue for processing animations/colors as batch
+ * Queue constructor
  *
  * @param qsize elements the queue can hold
  */

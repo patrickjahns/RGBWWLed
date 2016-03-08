@@ -51,7 +51,7 @@ enum RGBWW_COLORS {
 struct RGBWK {
     int r, g, b, w, k;
     RGBWK() {}
-    //TODO: default value für White color?
+    //TODO: default value for White color?
     RGBWK(int red, int green, int blue, int white) : r(red), g(green), b(blue), w(white), k(0) {}
     RGBWK(int red, int green, int blue, int white, int kelvin) : r(red), g(green), b(blue), w(white), k(kelvin) {}
     RGBWK(const RGBWK& rgbwk)
@@ -80,7 +80,7 @@ struct RGBWK {
 struct HSVK {
     int h, s, v, k;
     HSVK() {}
-    //TODO: default value für White color?
+    //TODO: default value for White color?
     HSVK(int hue, int sat, int val) : h(hue), s(sat), v(val), k(0) {}
     HSVK(int hue, int sat, int val, int kelvin) : h(hue), s(sat), v(val), k(kelvin) {}
 
@@ -89,7 +89,7 @@ struct HSVK {
         h = (constrain(hue, 0.0, 360.0) / 360) * RGBWW_PWMHUEWHEELMAX;
         s = (constrain(sat, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
         v = (constrain(val, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
-        //TODO: default value für White color?
+        //TODO: default value for White color?
         k = 0;
     }
 
@@ -138,7 +138,7 @@ class RGBWWColorUtils {
 
 public:
 	RGBWWColorUtils();
-	virtual 		~RGBWWColorUtils();
+	virtual 		~RGBWWColorUtils(){};
 
 	void			setColorMode(RGBWW_COLORMODE mode);
 	RGBWW_COLORMODE getColorMode();
