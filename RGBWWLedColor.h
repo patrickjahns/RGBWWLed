@@ -144,8 +144,8 @@ public:
 	RGBWW_COLORMODE getColorMode();
 	void    		setHSVmode(RGBWW_HSVMODE mode);
 	RGBWW_HSVMODE	getHSVmode();
-War
-
+	void 			setWhiteTemperature(int WarmWhite, int ColdWhite);
+	void			getWhiteTemperature(int& WarmWhite, int& ColdWhite);
 
 	/**
 	 * Correction for HSVtoRGB Normal Mode. Moves the boundaries
@@ -199,7 +199,7 @@ War
 	 */
 	void    		getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
 
-
+	//colorutils
 	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
 
 	/**
@@ -219,6 +219,7 @@ War
 	void    	RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
 
 
+	//helpers
 	static void circleHue(int& hue);
 
 
