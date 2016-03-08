@@ -1,23 +1,9 @@
 /**
+ * RGBWWLed - simple Library for controlling RGB WarmWhite ColdWhite LEDs via PWM
  * @file
  * @author  Patrick Jahns http://github.com/patrickjahns
  *
- * @section LICENSE
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details at
- * https://www.gnu.org/copyleft/gpl.html
- *
- * @section DESCRIPTION
- *
- *
+ * All files of this project are provided under the LGPL v3 license.
  */
 
 #ifndef RGBWWLedAnimation_h
@@ -36,7 +22,6 @@ class RGBWWLedAnimation;
 class RGBWWLedAnimationQ
 {
 public:
-	RGBWWLedAnimationQ() {};
 	RGBWWLedAnimationQ(int qsize);
 	~RGBWWLedAnimationQ();
 
@@ -44,40 +29,44 @@ public:
 	 * Check if the queue is empty or not
 	 *
 	 * @return	bool
+	 * @retval	true	queue is empty
+	 * @retval	false	queue is not empty
 	 */
 	bool isEmpty();
 
 	/**
 	 * Check if the queue is full
 	 *
-	 * @return	BOOL
+	 * @return	bool
+	 * @retval	true	queue is full
+	 * @retval	false	queue is not full
 	 */
 	bool isFull();
 
 	/**
 	 * Add an animation to the queue
 	 *
-	 * @param RGBWWLedAnimation* 	animation	pointer to Animation object
-	 * @return	bool
-	 * @retval 	true 	successfully inserted object queue
-	 * @retval	false	did not insert object into queue
+	 * @param 	animation
+	 * @return	if the object was inserted successfully
+	 * @retval 	true 	successfully inserted object
+	 * @retval	false	failed to insert objec
 	 */
 	bool push(RGBWWLedAnimation* animation);
 
 	/**
-	 * Empty Queue and delete all objects stored
+	 * Empty queue and delete all objects stored
 	 */
 	void clear();
 
 	/**
-	 * Returns first Animation object pointer but keeps it in the queue
+	 * Returns first animation object pointer but keeps it in the queue
 	 *
 	 * @return RGBWWLedAnimation*
 	 */
 	RGBWWLedAnimation*  peek();
 
 	/**
-	 *	Returns first Animation object pointer and removes it from queue
+	 *	Returns first animation object pointer and removes it from queue
 	 *
 	 * @return RGBWWLedAnimation*
 	 */
@@ -101,10 +90,9 @@ public:
 
 	virtual ~RGBWWLedAnimation() {};
 	/**
-	 * Main method that will be called from processing loop
-	 * Output/Calculation steps should be done here
+	 * Processing method, will be called from main loop
 	 *
-	 * @return bool		value representing the status of the animation
+	 * @return status of the animation
 	 * @retval true		the animation is finished
 	 * @retval false 	the animation is not finished yet
 	 */
@@ -113,7 +101,7 @@ public:
 
 	/**
 	 * Generic interface method for changing a variable
-	 * representing the speed of the animation
+	 * representing the speed of the current active animation
 	 *
 	 * @param newspeed
 	 */
@@ -121,7 +109,7 @@ public:
 
 	/**
 	 * Generic interface method for changing a variable
-	 * representing the brightness of the animation
+	 * representing the brightness of the current active animation
 	 *
 	 * @param newbrightness
 	 */
@@ -129,8 +117,7 @@ public:
 };
 
 /**
- * Simple Animation Object to set the output to a certain color
- * without effects/transition
+ * Set output to color without effect/transition
  *
  */
 class HSVSetOutput: public RGBWWLedAnimation
@@ -138,58 +125,64 @@ class HSVSetOutput: public RGBWWLedAnimation
 public:
 
 	/**
-	 * Simple Animation Object to set the output to a certain color
-	 * without effects/transition
+	 * Set output to color without effect/transition
 	 *
-	 * @param color New color to show
-	 * @param ctrl	Pointer to RGBWWLed controller objekt
+	 * @param color color to show
+	 * @param ctrl	pointer to RGBWWLed controller objekt
+	 * @param time  minimal amount of time the color stays active
 	 */
-	HSVSetOutput(const HSVK& color, RGBWWLed* rgbled);
+	HSVSetOutput(const HSVK& color, RGBWWLed* rgbled, int time = 0);
+
 	bool run();
 
 
 private:
+	int count;
+	int steps;
 	RGBWWLed* rgbwwctrl;
 	HSVK outputcolor;
 };
 
 
+struct BresenhamValues {
+	int delta, error, count, step;
+};
 
 /**
- * A simple Colorfade animation using HSV
+ * A simple Colorfade utilizing the HSV colorspace
  *
  */
 class HSVTransition: public RGBWWLedAnimation
 {
 public:
 
-	/**
-	 * Simple Anination to fade from the current color to another color (colorFinish)
-	 * There are two options for the direction of the fade (short way/ long way)
-	 *
-	 * @param colorFinish	color where the animation should end
-	 * @param time			the amount of time the animation takes in ms
-	 * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
-	 * @param ctrl			main rgbww objekt
-	 */
-	HSVTransition(const HSVK& colorFinish, const int& time, const int& direction, RGBWWLed* ctrl);
 
 	/**
-	 * Simple Anination to fade from one color (colorFrom) to another color (colorFinish)
-	 * There are two options for the direction of the fade (short way/ long way)
+	 * Fade from the current color to another color (colorEnd).
 	 *
-	 * @param colorFrom		color from which the animation should start
-	 * @param colorFinish	color where the animation should end
+	 * @param colorEnd		color at the end
 	 * @param time			the amount of time the animation takes in ms
 	 * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
-	 * @param ctrl			main rgbww objekt
+	 * @param ctrl			main RGBWWLed Objekt for calling setOutput
 	 */
-	HSVTransition(const HSVK& colorFrom, const HSVK& colorFinish, const int& time, const int& direction, RGBWWLed* ctrl);
+	HSVTransition(const HSVK& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl);
+
+	/**
+	 * Fade from one color (colorFrom) to another color (colorFinish)
+	 *
+	 * @param colorFrom		color at the beginning
+	 * @param colorEnd		color at the end
+	 * @param time			the amount of time the animation takes in ms
+	 * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
+	 * @param ctrl			main RGBWWLed Objekt for calling setOutput
+	 */
+	HSVTransition(const HSVK& colorFrom, const HSVK& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl);
+
 
 	bool run();
 
 private:
-	void        init();
+	bool init();
 
 	HSVK	_basecolor;
 	HSVK	_currentcolor;
@@ -198,27 +191,14 @@ private:
 	int	_currentstep;
 	int _steps;
 	int _huedirection;
-	int	_dhue;
-	int _hueerror;
-	int _huecount;
-	int _huestep;
-	int _dsat;
-	int _saterror;
-	int _satcount;
-	int _satstep;
-	int _dval;
-	int _valerror;
-	int _valcount;
-	int _valstep;
-	int _dkelvin;
-	int _kelvinerror;
-	int _kelvincount;
-	int _kelvinstep;
+	BresenhamValues hue;
+	BresenhamValues sat;
+	BresenhamValues val;
+	BresenhamValues kelvin;
+
 
 	RGBWWLed*    rgbwwctrl;
-
-	static 	int	bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, int& base, int& current);
-
+	static	int bresenham(BresenhamValues& values, int& dx, int& base, int& current);
 };
 
 #endif // RGBWWLedAnimation_h

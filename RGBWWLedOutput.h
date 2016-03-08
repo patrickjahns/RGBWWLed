@@ -1,23 +1,9 @@
 /**
+ * RGBWWLed - simple Library for controlling RGB WarmWhite ColdWhite LEDs via PWM
  * @file
  * @author  Patrick Jahns http://github.com/patrickjahns
  *
- * @section LICENSE
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details at
- * https://www.gnu.org/copyleft/gpl.html
- *
- * @section DESCRIPTION
- *
- *
+ * All files of this project are provided under the LGPL v3 license.
  */
 #ifndef RGBWWLedOutput_h
 #define RGBWWLedOutput_h
@@ -25,6 +11,12 @@
 
 
 #ifdef RGBWW_USE_ESP_HWPWM
+
+/*
+ *  Use PWM Code from espressif sdk
+ *  Provides a more stable pwm implementation compared to arduino esp
+ *  framework
+ */
 
 extern "C" {
 #include <pwm.h>
@@ -64,6 +56,12 @@ private:
 
 #else
 
+/*
+ * If not using pwm implementation from espressif esp sdk
+ * we fallback to the standard arduino pwm implementation
+ *
+ */
+
 class PWMOutput
 	{
 
@@ -91,7 +89,6 @@ class PWMOutput
 		int		_duty[5];
 		
 };
-#endif //USE_ESP_HWPWM
-
+#endif //RGBWW_USE_ESP_HWPWM
 
 #endif //RGBWWLedOutput_h

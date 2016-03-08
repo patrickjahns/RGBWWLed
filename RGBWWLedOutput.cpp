@@ -1,31 +1,19 @@
 /**
+ * RGBWWLed - simple Library for controlling RGB WarmWhite ColdWhite LEDs via PWM
  * @file
  * @author  Patrick Jahns http://github.com/patrickjahns
  *
- * @section LICENSE
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details at
- * https://www.gnu.org/copyleft/gpl.html
- *
- * @section DESCRIPTION
- *
- *
+ * All files of this project are provided under the LGPL v3 license.
  */
 #include "RGBWWLed.h"
 #include "RGBWWLedOutput.h"
 
 #ifdef RGBWW_USE_ESP_HWPWM
-/****************************************************************
- 	SMING -> we can use hardware pwm from ESP
- ***************************************************************/
+/*
+ *  Use PWM Code from espressif sdk
+ *  Provides a more stable pwm implementation compared to arduino esp
+ *  framework
+ */
 
 PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq /* = 200 */) {
 	
@@ -62,7 +50,6 @@ int	PWMOutput::getFrequency() {
 void PWMOutput::setRed(int value, bool update /* = true */) {
 	
 	int duty = parseDuty(value);
-	//debugRGBW("RED - new duty %i, old duty %i channel %i", duty, getRed(), COLORS::RED);
 	if (duty != getRed()) {
         pwm_set_duty(duty, RGBWW_COLORS::RED);
         _duty[RGBWW_COLORS::RED] = pwm_get_duty(RGBWW_COLORS::RED);
@@ -79,7 +66,6 @@ int	PWMOutput::getRed(){
 
 void PWMOutput::setGreen(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-	//debugRGBW("GREEN - new duty %i, old duty %i channel %i", duty, getBlue(), COLORS::BLUE);
     if (duty != getGreen()) {
         pwm_set_duty(duty, RGBWW_COLORS::GREEN);
         _duty[RGBWW_COLORS::GREEN] = pwm_get_duty(RGBWW_COLORS::GREEN);
@@ -95,7 +81,6 @@ int	PWMOutput::getGreen() {
 
 void PWMOutput::setBlue(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-	//debugRGBW("BLUE - new duty %i, old duty %i channel %i", duty, getGreen(), COLORS::GREEN);
     if (duty != getBlue()) {
         pwm_set_duty(duty, RGBWW_COLORS::BLUE);
         _duty[RGBWW_COLORS::BLUE] = pwm_get_duty(RGBWW_COLORS::BLUE);
@@ -111,7 +96,6 @@ int PWMOutput::getBlue(){
 
 void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-    //debugRGBW("WW - new duty %i, old duty %i channel %i", duty, getWarmWhite(), COLORS::WW);
 	if (duty != getWarmWhite()) {
         pwm_set_duty(duty, RGBWW_COLORS::WW);
         _duty[RGBWW_COLORS::WW] = pwm_get_duty(RGBWW_COLORS::WW);
@@ -127,7 +111,6 @@ int	PWMOutput::getWarmWhite() {
 
 void PWMOutput::setColdWhite(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
-	//debugRGBW("CW - new duty %i, old duty %i channel %i", duty, getColdWhite(), COLORS::CW);
     if (duty != getColdWhite()) {
         pwm_set_duty(duty, RGBWW_COLORS::CW);
         _duty[RGBWW_COLORS::CW] = pwm_get_duty(RGBWW_COLORS::CW);
@@ -141,12 +124,16 @@ int	PWMOutput::getColdWhite(){
 }
 
 void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldwhite){
+
 	setRed(red, false);
 	setGreen(green, false);
 	setBlue(blue, false);
 	setWarmWhite(warmwhite, false);
 	setColdWhite(coldwhite, false);
+	//only call pwm start at the end of all changes
+	//might cause delay/missed changes otherwise
 	pwm_start();
+
 }
 
 
@@ -157,9 +144,11 @@ int PWMOutput::parseDuty(int duty) {
 
 #else
 
-/******************************************************
- * 	NOT ESP HW_PWM => we use Arduino ESP framework pwm
- ******************************************************/
+/*
+ * If not using pwm implementation from espressif esp sdk
+ * we fallback to the standard arduino pwm implementation
+ *
+ */
 PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq /* = 200 */) {
 
 	_pins[RGBWW_COLORS::RED] = redPin;
@@ -239,9 +228,5 @@ void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldw
 	setWarmWhite(warmwhite);
 	setColdWhite(coldwhite);
 }
-/*
-int PWMOutput::parseDuty(int duty) {
-	return (duty*_maxduty)/RGBWW_PWMMAXVAL;
-}
-*/
-#endif //USE_ESP_HWPWM
+
+#endif //RGBWW_USE_ESP_HWPWM

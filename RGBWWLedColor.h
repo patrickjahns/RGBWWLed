@@ -1,25 +1,9 @@
 /**
+ * RGBWWLed - simple Library for controlling RGB WarmWhite ColdWhite LEDs via PWM
  * @file
  * @author  Patrick Jahns http://github.com/patrickjahns
  *
- *
- * @section LICENSE
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details at
- * https://www.gnu.org/copyleft/gpl.html
- *
- * @brief
- * @section DESCRIPTION
- *
- *
+ * All files of this project are provided under the LGPL v3 license.
  */
 #ifndef RGBWWLedColor_h
 #define RGBWWLedColor_h
@@ -32,7 +16,7 @@ enum RGBWW_COLORMODE {
 	RGBWWCW = 3
 };
 
-enum RGBWW_HSVMODE {
+enum RGBWW_HSVMODEL {
 	NORMAL = 0,
 	SPEKTRUM = 1,
 	RAINBOW = 2
@@ -50,7 +34,7 @@ enum RGBWW_COLORS {
 //struct for RGBW + Kelvin
 struct RGBWK {
     int r, g, b, w, k;
-    RGBWK() {}
+    RGBWK() {r = g = b = w = k = 0;}
     //TODO: default value for White color?
     RGBWK(int red, int green, int blue, int white) : r(red), g(green), b(blue), w(white), k(0) {}
     RGBWK(int red, int green, int blue, int white, int kelvin) : r(red), g(green), b(blue), w(white), k(kelvin) {}
@@ -77,9 +61,10 @@ struct RGBWK {
 
 
 // struct for HSV + Kelvin
+
 struct HSVK {
     int h, s, v, k;
-    HSVK() {}
+    HSVK() { h = s = v = k = 0;}
     //TODO: default value for White color?
     HSVK(int hue, int sat, int val) : h(hue), s(sat), v(val), k(0) {}
     HSVK(int hue, int sat, int val, int kelvin) : h(hue), s(sat), v(val), k(kelvin) {}
@@ -133,6 +118,14 @@ struct HSVK {
 
 };
 
+
+
+/**
+ * Class with functions for converting between different colorspaces
+ * (HSVK, RGBWK), changing outputmodes (RGBWW_COLORMODE) and
+ * calculating color temperature and white balance
+ *
+ */
 class RGBWWColorUtils {
 
 
@@ -140,17 +133,65 @@ public:
 	RGBWWColorUtils();
 	virtual 		~RGBWWColorUtils(){};
 
-	void			setColorMode(RGBWW_COLORMODE mode);
+
+	/**
+	 * Set the output setting of the controler.
+	 * See RGBWW_COLORMODE for modes
+	 *
+	 * @param mode RGBWW_COLORMODE
+	 */
+	void setColorMode(RGBWW_COLORMODE mode);
+
+	/**
+	 * Get the current output setting
+	 *
+	 * @return RGBWW_COLORMODE
+	 */
 	RGBWW_COLORMODE getColorMode();
-	void    		setHSVmode(RGBWW_HSVMODE mode);
-	RGBWW_HSVMODE	getHSVmode();
-	void 			setWhiteTemperature(int WarmWhite, int ColdWhite);
-	void			getWhiteTemperature(int& WarmWhite, int& ColdWhite);
+
+
+	/**
+	 * set the default conversion for HSVK to RGBWK color space.
+	 * For valid models see RGBWW_HSVMODEL
+	 *
+	 * @param model	RGBWW_HSVMODEL models
+	 */
+	void setHSVmodel(RGBWW_HSVMODEL model);
+
+
+	/**
+	 * Returns the model used for default conversion between hsvk and rgbwk
+	 *
+	 * @return RGBWW_HSVMODEL
+	 */
+	RGBWW_HSVMODEL	getHSVmodel();
+
+
+	/**
+	 * Set the color temperature for warm/cold white channel in kelvin
+	 *
+	 * @param WarmWhite color temperatur of warm white channel in kelvin
+	 * @param ColdWhite color temperature of cold white channel in kelvin
+	 */
+	void setWhiteTemperature(int WarmWhite, int ColdWhite);
+
+
+	/**
+	 * Returns the settings for the warm/cold white color temperatures
+	 *
+	 * @param WarmWhite color temperatur of warm white channel in kelvin
+	 * @param ColdWhite color temperature of cold white channel in kelvin
+	 */
+	void getWhiteTemperature(int& WarmWhite, int& ColdWhite);
+
 
 	/**
 	 * Correction for HSVtoRGB Normal Mode. Moves the boundaries
 	 * of each color further left/right. Assumes all variables are
 	 * contained in [-30.0, 30.0]
+	 *
+	 * More information on HSV colorspace see:
+	 * https://en.wikipedia.org/wiki/HSL_and_HSV#Hue_and_chroma
 	 *
 	 * @param float	red
 	 * @param float	yellow
@@ -159,7 +200,8 @@ public:
 	 * @param float	blue
 	 * @param float	magenta
 	 */
-	void    		setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
+	void setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
+
 
 	/**
 	 * Copies the current values used for HSV correction into the
@@ -172,7 +214,8 @@ public:
 	 * @param float&	blue
 	 * @param float&	magenta
 	 */
-	void    		getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
+	void getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
+
 
 	/**
 	 * Set the maximum brightness if output for the channels
@@ -186,7 +229,8 @@ public:
 	 * @param int 	ww 	warm white channel (
 	 *
 	 */
-	void    		setBrightnessCorrection(int r, int g, int b, int ww, int cw);
+	void setBrightnessCorrection(int r, int g, int b, int ww, int cw);
+
 
 	/**
 	 * Copies the current value of the brightness factor into the specified variables
@@ -197,26 +241,87 @@ public:
 	 * @param int&	ww
 	 * @param int&	cw
 	 */
-	void    		getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
+	void getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
 
-	//colorutils
-	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
+
+	/**
+	 * Applies the white colortemperature
+	 *
+	 * @param RGBWK&	rgbw
+	 * @param int& 		ww
+	 * @param int&		cw
+	 */
+	void whiteBalance(RGBWK& rgbw, int& ww, int& cw);
+
 
 	/**
 	 * Corrects the values in the parsed array according to the set
-	 * color correction
+	 * brightness correction
 	 *
 	 * @param int[] color
 	 */
-	void		correctBrightness(int color[]);
-	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
-	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE mode);
-	void    	HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw);
-	void    	HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw);
-	void    	HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw);
+	void correctBrightness(int color[]);
 
 
-	void    	RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
+	/**
+	 * Convert HSVK Values to RGBK colorspace
+	 * Uses to conversion model set with setHSVmodel
+	 *
+	 * @param hsvk		HSVK struct with values
+	 * @param rgbwk		RGBWK struct to hold result
+	 */
+	void HSVtoRGB(const HSVK& hsvk, RGBWK& rgbwk);
+
+
+	/**
+	 * Convert HSVK Values to RGBK colorspace
+	 *
+	 * @param hsvk		HSVK struct with values
+	 * @param rgbwk		RGBWK struct to hold result
+	 * @param mode		conversion model to be used (RGBWW_HSVMODEL)
+	 */
+	void HSVtoRGB(const HSVK& hsvk, RGBWK& rgbwk, RGBWW_HSVMODEL mode);
+
+
+	/**
+	 * Convert HSV values to RGB colorspace using the algorithm
+	 * from https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+	 *
+	 *
+	 * @param hsvk		HSVK struct with values
+	 * @param rgbwk		RGBWK struct to hold result
+	 */
+	void HSVtoRGBn(const HSVK& hsvk, RGBWK& rgbwk);
+
+
+	/**
+	 * Convert HSV values to RGB colorspace by keeping
+	 * the max total color output equal.
+	 * Information see:
+	 * https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
+	 *
+	 * @param hsvk		HSVK struct with values
+	 * @param rgbwk		RGBWK struct to hold result
+	 */
+	void HSVtoRGBspektrum(const HSVK& hsvk, RGBWK& rgbwk);
+
+
+	/**
+	 * Convert HSV values to RGB colorspace with rainbow color table
+	 * Information see:
+	 * https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
+	 *
+	 * @param hsvk		HSVK struct with values
+	 * @param rgbwk		RGBWK struct to hold result
+	 */
+	void HSVtoRGBrainbow(const HSVK& hsvk, RGBWK& rgbwk);
+
+	/**
+	 *
+	 * @param rgbwk
+	 * @param hsvk
+	 */
+	void RGBtoHSV(const RGBWK& rgbwk, HSVK& hsvk);
 
 
 	/**
@@ -235,7 +340,7 @@ private:
 	int			_ColdWhiteKelvin;
 
 	RGBWW_COLORMODE       _colormode;
-	RGBWW_HSVMODE         _hsvmode;
+	RGBWW_HSVMODEL         _hsvmodel;
 
 	static int 	parseColorCorrection(float val);
 	void    	createHueWheel();

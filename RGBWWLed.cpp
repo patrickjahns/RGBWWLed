@@ -1,23 +1,9 @@
 /**
+ * RGBWWLed - simple Library for controlling RGB WarmWhite ColdWhite LEDs via PWM
  * @file
  * @author  Patrick Jahns http://github.com/patrickjahns
  *
- * @section LICENSE
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details at
- * https://www.gnu.org/copyleft/gpl.html
- *
- * @section DESCRIPTION
- *
- *
+ * All files of this project are provided under the LGPL v3 license.
  */
 #include "RGBWWLed.h"
 #include "RGBWWLedColor.h"
@@ -37,13 +23,12 @@ RGBWWLed::RGBWWLed() {
 	_current_color = HSVK(0, 0, 0);
 	_currentAnimation = NULL;
 	_animationQ = new RGBWWLedAnimationQ(RGBWW_ANIMATIONQSIZE);
-	colorutils = new RGBWWColorUtils();
 	_pwm_output = NULL;
+	last_active = 0;
 
 }
 
 RGBWWLed::~RGBWWLed() {
-	delete colorutils;
 	delete _animationQ;
 	if (_currentAnimation != NULL) {
 		delete _currentAnimation;
@@ -54,20 +39,9 @@ RGBWWLed::~RGBWWLed() {
 
 }
 
-/**
- * Initialize the the LED Controller
- *
- * @param redPIN
- * @param greenPIN
- * @param bluePIN
- * @param wwPIN
- * @param cwPIN
- * @param pwmFrequency (default 200)
- */
+
 void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency /* =200 */) {
-
 	_pwm_output = new PWMOutput(redPIN, greenPIN, bluePIN, wwPIN, cwPIN, pwmFrequency);
-
 }
 
 
@@ -76,50 +50,30 @@ void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN,
  *                     OUTPUT
  **************************************************************/
 
-/**
- * Refreshs the current output
- * Usefull when changing brightness, white or color correction
- *
- */
+
 void RGBWWLed::refresh() {
 	setOutput(_current_color);
 }
  
  
-/**
- * Returns the current color as HSVK
- *
- * @return HSVK
- */
 HSVK RGBWWLed::getCurrentColor() {
 	return _current_color;
 }
 
-/**
- * Set Output to given HSVK color
- * Converts HSVK into seperate color channels (r,g,b,w)
- * and applies brightness and white correction
- *
- * @param HSVK&	outputcolor
- */
+
 void RGBWWLed::setOutput(HSVK& outputcolor) {
 	RGBWK rgbw;
 	_current_color = outputcolor;
-	colorutils->HSVtoRGB(outputcolor, rgbw);
+	colorutils.HSVtoRGB(outputcolor, rgbw);
 	setOutput(rgbw);
 
 }
 
-/**
- * Sets the output of the Controller to the given RGBWK
- * while applying brightness and white correction
- *
- * @param RGBWK&	outputcolor
- */
+
 void RGBWWLed::setOutput(RGBWK& outputcolor) {
 	int colors[5];
 	int ww, cw;
-	colorutils->whiteBalance(outputcolor, ww, cw);
+	colorutils.whiteBalance(outputcolor, ww, cw);
 	colors[RGBWW_COLORS::RED] = outputcolor.r;
 	colors[RGBWW_COLORS::GREEN] = outputcolor.g;
 	colors[RGBWW_COLORS::BLUE] = outputcolor.b;
@@ -133,19 +87,6 @@ void RGBWWLed::setOutput(RGBWK& outputcolor) {
 }
 
 
-
-
-/**
- * Directly set the PWM values without color correction or white balance
- * Assumes the values are in the range of [0, 1023] or äquivalent if you change
- * the value range
- *
- * @param int&	red
- * @param int&	green
- * @param int&	blue
- * @param int&	wwhite
- * @param int&	cwhite
- */
 void RGBWWLed::setOutputRaw(int& red, int& green, int& blue, int& wwhite, int& cwhite) {
 	if(_pwm_output != NULL) {
 		_pwm_output->setOutput(red, green, blue, wwhite, cwhite);
@@ -158,15 +99,6 @@ void RGBWWLed::setOutputRaw(int& red, int& green, int& blue, int& wwhite, int& c
  **************************************************************/
 
 
-/**
- * Main function for processing animations/color output
- * Use this in your loop()
- *
- *
- * @return BOOL
- * @retval TRUE 	not updating
- * @retval FALSE 	updates applied
- */
 bool RGBWWLed::show() {
 
 
@@ -216,153 +148,107 @@ bool RGBWWLed::show() {
 
 }
 
-/**
- * Check if the AnimationQ is full
- * @return
- */
+
+
 bool RGBWWLed::isAnimationQFull() {
 	return _animationQ->isFull();
 }
 
-/**
- * Check if an animation is currently active
- * @return
- * @retval true if active
- */
+
 bool RGBWWLed::isAnimationActive() {
 	return _isAnimationActive;
 }
 
-/**
- * skip the current Animation
- */
+
 void RGBWWLed::skipAnimation(){
 	if (_isAnimationActive) {
 		_cancelAnimation = true;
 	}
 }
 
-/**
- * Cancel all following Animations
- */
+
 void RGBWWLed::clearAnimationQueue() {
 	_clearAnimationQueue = true;
 }
 
-/**
- * Function to call after an animation has finished
- *
- * @param func
- */
+
 void RGBWWLed::setAnimationCallback( void (*func)(RGBWWLed* led) ) {
   _animationcallback = func;
 }
 
-/**
- * Change the speed of the current running animation
- *
- * @param speed
- */
+
 void RGBWWLed::setAnimationSpeed(int speed) {
 	if(_currentAnimation != NULL) {
 		_currentAnimation->setSpeed(speed);
 	}
 }
 
-/**
- * Change the brightness of the current animation
- * @param brightness
- */
+
 void RGBWWLed::setAnimationBrightness(int brightness){
 	if(_currentAnimation != NULL) {
 			_currentAnimation->setBrightness(brightness);
 		}
 }
 
-/**
- *
- * @param color
- */
+
 void RGBWWLed::setHSV(HSVK& color) {
 	setHSV( color, 0, 1, false);
 }
 
-/**
- *
- * @param color
- * @param time
- * @param q
- */
-void RGBWWLed::setHSV(HSVK& color, int time, bool q) {
-	setHSV( color, time, 1, q);
+
+void RGBWWLed::setHSV(HSVK& color, int time, bool queue) {
+	setHSV( color, time, 1, queue);
 }
 
-/**
- *
- * @param color
- * @param time
- * @param direction
- */
+
 void RGBWWLed::setHSV(HSVK& color, int time, int direction) {
 	setHSV( color, time, direction, false);
 }
 
-/**
- *
- * @param color
- * @param time
- * @param direction
- * @param q
- */
-void RGBWWLed::setHSV(HSVK& color, int time, int direction /* = 1 */, bool q /* = false */) {
-	HSVK colorFrom = getCurrentColor();
+
+void RGBWWLed::setHSV(HSVK& color, int time, int direction /* = 1 */, bool queue /* = false */) {
+
+	if (time == 0 || time < RGBWW_MINTIMEDIFF) {
+		// no animation - setting color directly
+		if (!queue) {
+			//not using queue
+			cleanupAnimationQ();
+			cleanupCurrentAnimation();
+		}
+		_animationQ->push(new HSVSetOutput(color, this));
+	} else {
+		if (!queue) {
+			//not using queue
+			cleanupAnimationQ();
+			cleanupCurrentAnimation();
+		}
+		_animationQ->push(new HSVTransition(color, time, direction, this));
+	}
+
+}
+
+
+void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction /* = 1 */, bool queue /* = false */) {
+
 	if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  || colorFrom.k != color.k  ) {
-		//only set color if it differs from current color
 		if (time == 0 || time < RGBWW_MINTIMEDIFF) {
 			// no animation - setting color directly
-			// TODO: only animate if color is different from current color
-			if (!q) {
+			if (!queue) {
+				//not using queue
 				cleanupAnimationQ();
 				cleanupCurrentAnimation();
 			}
 			_animationQ->push(new HSVSetOutput(color, this));
 
 		} else {
-			if (!q) {
+			if (!queue) {
+				//not using queue
 				cleanupAnimationQ();
 				cleanupCurrentAnimation();
 			}
-			_animationQ->push(new HSVTransition(color, time, direction, this));
+			_animationQ->push(new HSVTransition(colorFrom, color, time, direction, this));
+
 		}
-	}
-
-}
-
-/**
- *
- * @param colorFrom
- * @param color
- * @param time
- * @param direction
- * @param q
- */
-void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction /* = 1 */, bool q /* = false */) {
-
-	if (time == 0 || time < RGBWW_MINTIMEDIFF) {
-		// no animation - setting color directly
-		if (!q) {
-			cleanupAnimationQ();
-			cleanupCurrentAnimation();
-		}
-		_animationQ->push(new HSVSetOutput(color, this));
-
-	} else {
-		if (!q) {
-			cleanupAnimationQ();
-			cleanupCurrentAnimation();
-		}
-		_animationQ->push(new HSVTransition(colorFrom, color, time, direction, this));
-
 	}
 }
 

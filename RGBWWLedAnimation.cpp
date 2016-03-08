@@ -1,23 +1,9 @@
 /**
+ * RGBWWLed - simple Library for controlling RGB WarmWhite ColdWhite strips
  * @file
  * @author  Patrick Jahns http://github.com/patrickjahns
  *
- * @section LICENSE
- *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License as
- * published by the Free Software Foundation; either version 3 of
- * the License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- * General Public License for more details at
- * https://www.gnu.org/copyleft/gpl.html
- *
- * @section DESCRIPTION
- *
- *
+ * All files of this project are provided under the LGPL v3 license.
  */
 
 #include "RGBWWLedAnimation.h"
@@ -28,60 +14,49 @@
  *               HSVSetOutput
  **************************************************************/
 
-/**
- * Simple Animation Object to set the output to a certain color
- * without effects/transition
- *
- * @param color New color to show
- * @param ctrl	Pointer to RGBWWLed controller objekt
- */
-HSVSetOutput::HSVSetOutput(const HSVK& color, RGBWWLed* ctrl){
+
+HSVSetOutput::HSVSetOutput(const HSVK& color, RGBWWLed* ctrl, int time /* = 0 */){
 	outputcolor = color;
 	rgbwwctrl = ctrl;
+	steps = 0;
+	if (time > 0) {
+		steps = time / RGBWW_MINTIMEDIFF;
+	}
+	count = 0;
 }
 
 bool HSVSetOutput::run() {
-	rgbwwctrl->setOutput(outputcolor);
+	if (count == 0) {
+		rgbwwctrl->setOutput(outputcolor);
+	}
+	if (steps != 0) {
+		if (count < steps) {
+			return false;
+		}
+	}
+	count += 1;
 	return true;
 }
-
 
 
 /**************************************************************
  *               HSV Transition
  **************************************************************/
 
-/**
- * Simple Anination to fade from the current color to another color (colorFinish)
- * There are two options for the direction of the fade (short way/ long way)
- *
- * @param colorFinish	color where the animation should end
- * @param time			the amount of time the animation takes in ms
- * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
- * @param ctrl			main rgbww objekt
- */
-HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& direction, RGBWWLed* ctrl ) {
+
+HSVTransition::HSVTransition(const HSVK& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl ) {
 	rgbwwctrl = ctrl;
-	_finalcolor = color;
+	_finalcolor = colorEnd;
 	_hasbasecolor = false;
 	_steps = time / RGBWW_MINTIMEDIFF;
 	_huedirection = direction;
 	_currentstep = 0;
 }
 
-/**
- * Simple Anination to fade from one color (colorFrom) to another color (colorFinish)
- * There are two options for the direction of the fade (short way/ long way)
- *
- * @param colorFrom		color from which the animation should start
- * @param colorFinish	color where the animation should end
- * @param time			the amount of time the animation takes in ms
- * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
- * @param ctrl			main rgbww objekt
- */
-HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& colorFinish, const int& tm, const int& direction, RGBWWLed* ctrl ) {
+
+HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& colorEnd, const int& tm, const int& direction, RGBWWLed* ctrl ) {
 	rgbwwctrl = ctrl;
-	_finalcolor = colorFinish;
+	_finalcolor = colorEnd;
 	_basecolor = colorFrom;
 	_hasbasecolor = true;
 	_steps = tm / RGBWW_MINTIMEDIFF;
@@ -90,11 +65,14 @@ HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& colorFinish, con
 
 }
 
-void HSVTransition::init() {
+bool HSVTransition::init() {
 	int l, r, d;
-	debugRGBW("==   HSVT INIT   =====");
 	if (!_hasbasecolor) {
 		_basecolor = rgbwwctrl->getCurrentColor();
+	}
+	//don`t animate if the color is already the same
+	if (_basecolor.h == _finalcolor.h && _basecolor.s == _finalcolor.s && _basecolor.v == _finalcolor.v && _basecolor.k == _finalcolor.k) {
+		return false;
 	}
 	_currentcolor = _basecolor;
 
@@ -113,51 +91,52 @@ void HSVTransition::init() {
 
 
 	//HUE
-	_dhue = (d == -1) ? l : r;
-	_huestep = 1;
-	_huestep = (_dhue < _steps) ? (_huestep <<8) : (_dhue << 8)/_steps;
-	_huestep *= d;
-	_hueerror =  -1 * _steps;
-	_huecount = 0;
+	hue.delta = (d == -1) ? l : r;
+	hue.step = 1;
+	hue.step = (hue.delta < _steps) ? (hue.step <<8) : (hue.delta << 8)/_steps;
+	hue.step *= d;
+	hue.error = -1 * _steps;
+	hue.count = 0;
 
 	//SATURATION
-	_dsat = abs(_basecolor.s - _finalcolor.s);
-	_satstep = 1;
-	_satstep = (_dsat < _steps) ? (_satstep << 8) : (_dsat << 8)/_steps;
-	_satstep = (_basecolor.s > _finalcolor.s) ? _satstep*=-1 : _satstep;
-	_saterror = -1 * _steps;
-	_satcount = 0;
+	sat.delta = abs(_basecolor.s - _finalcolor.s);
+	sat.step = 1;
+	sat.step = (sat.delta < _steps) ? (sat.step << 8) : (sat.delta << 8)/_steps;
+	sat.step = (_basecolor.s > _finalcolor.s) ? sat.step*=-1 : sat.step;
+	sat.error = -1* _steps;
+	sat.count = 0;
 
 	//VALUE
-	_dval = abs(_basecolor.v - _finalcolor.v);
-	_valstep = 1;
-	_valstep = (_dval < _steps) ? (_valstep << 8) : (_dval << 8)/_steps;
-	_valstep = (_basecolor.v > _finalcolor.v) ? _valstep*=-1 : _valstep;
-	_valerror = -1 * _steps;
-	_valcount = 0;
+	val.delta = abs(_basecolor.v - _finalcolor.v);
+	val.step = 1;
+	val.step = (val.delta < _steps) ? (val.step << 8) : (val.delta << 8)/_steps;
+	val.step = (_basecolor.v > _finalcolor.v) ? val.step*=-1 : val.step;
+	val.error = -1*_steps;
+	val.count = 0;
 
 	//KELVIN
-	_dkelvin = abs(_basecolor.k - _finalcolor.k);
-	_kelvinstep = 1;
-	_kelvinstep = (_dkelvin < _steps) ? (_kelvinstep << 8 ): (_dkelvin << 8)/_steps;
-	_kelvinstep = (_basecolor.k > _finalcolor.k) ? _kelvinstep*=-1 : _kelvinstep;
-	_kelvinerror = -1 * _steps;
-	_kelvincount = 0;
-
-	debugRGBW("steps %i", _steps);
-	debugRGBW("dhue %i", _dhue);
-	debugRGBW("dsat %i", _dsat);
-	debugRGBW("dval %i", _dval);
-	debugRGBW("dkelvin %i", _dkelvin);
-	debugRGBW("== //HSVT INIT   =====");
+	kelvin.delta = abs(_basecolor.k - _finalcolor.k);
+	kelvin.step = 1;
+	kelvin.step = (kelvin.delta < _steps) ? (kelvin.step << 8 ): (kelvin.delta << 8)/_steps;
+	kelvin.step = (_basecolor.k > _finalcolor.k) ? kelvin.step*=-1 : kelvin.step;
+	kelvin.error = -1 * _steps;
+	kelvin.count = 0;
+	return true;
 }
+
 
 
 bool HSVTransition::run () {
 	debugRGBW("== HSV RUN =====");
 	if (_currentstep == 0) {
-		init();
+		if (!init()) {
+			return true;
+		}
 	}
+	debugRGBW("CURRENT  H %i | S %i | V %i | K %i", _currentcolor.h, _currentcolor.s, _currentcolor.v, _currentcolor.k);
+	debugRGBW("FINAL    H %i | S %i | V %i | K %i", _finalcolor.h, _finalcolor.s, _finalcolor.v, _finalcolor.k);
+	rgbwwctrl->setOutput(_currentcolor);
+
 	_currentstep++;
 	if (_currentstep >= _steps) {
 		// ensure that the with the last step
@@ -166,50 +145,29 @@ bool HSVTransition::run () {
 		return true;
 	}
 	
-	
-	//	improvement idea:
-	//	set new value at the beginning and then calculate next step
-
 	//calculate new colors with bresenham
-	_currentcolor.h = bresenham(_hueerror, _huecount, _steps, _dhue, _huestep, _basecolor.h, _currentcolor.h);
+	_currentcolor.h = bresenham(hue, _steps, _basecolor.h, _currentcolor.h);
+	_currentcolor.s = bresenham(sat, _steps, _basecolor.s, _currentcolor.s);
+	_currentcolor.v = bresenham(val, _steps,_basecolor.v, _currentcolor.v);
+	_currentcolor.k = bresenham(kelvin, _steps, _basecolor.k, _currentcolor.k);
+
 	//fix hue
 	RGBWWColorUtils::circleHue(_currentcolor.h);
-	_currentcolor.s = bresenham(_saterror, _satcount, _steps, _dsat, _satstep, _basecolor.s, _currentcolor.s);
-	_currentcolor.v = bresenham(_valerror, _valcount, _steps, _dval, _valstep, _basecolor.v, _currentcolor.v);
-	_currentcolor.k = bresenham(_kelvinerror, _kelvincount, _steps, _dkelvin, _kelvinstep, _basecolor.k, _currentcolor.k);
 
-
-
-	debugRGBW("H", _currentcolor.h);
-	debugRGBW("S", _currentcolor.s);
-	debugRGBW("V", _currentcolor.v);
-	debugRGBW("K", _currentcolor.k);
 	debugRGBW("== //HSV RUN =====");
 
-	rgbwwctrl->setOutput(_currentcolor);
 	return false;
 }
 
-/**
- * Bresenham line algorithm modified for calculating dy with dx
- * Information on Algorithm see:
- * https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
- *
- * @param error
- * @param ctr
- * @param dx
- * @param dy
- * @param incr
- * @param base
- * @param current
- * @return
- */
-int HSVTransition::bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, int& base, int& current) {
-	error = error + 2 * dy;
-	if (error > 0) {
-		ctr++;
-		error = error - 2*dx;
-		return base + ((ctr * incr) >> 8);
+
+int HSVTransition::bresenham(BresenhamValues& values, int& dx, int& base, int& current) {
+	//more information on bresenham:
+	//https://www.cs.helsinki.fi/group/goa/mallinnus/lines/bresenh.html
+	values.error = values.error + 2 * values.delta;
+	if (values.error > 0) {
+		values.count += 1;
+		values.error = values.error - 2*dx;
+		return base + ((values.count * values.step) >> 8);
 	}
 	return current;
 }
@@ -218,11 +176,7 @@ int HSVTransition::bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, 
                 Animation Queue
  **************************************************************/
 
-/**
- * Queue constructor
- *
- * @param qsize elements the queue can hold
- */
+
 RGBWWLedAnimationQ::RGBWWLedAnimationQ(int qsize) {
 	_size = qsize;
 	_count = 0;
@@ -236,34 +190,17 @@ RGBWWLedAnimationQ::~RGBWWLedAnimationQ(){
 	delete q;
 }
 
-/**
- * Check if the queue is empty or not
- *
- * @return	bool
- */
+
 bool RGBWWLedAnimationQ::isEmpty() {
 	return _count == 0;
 }
 
-/**
- * Check if the queue is full
- *
- * @return	BOOL
- */
+
 bool RGBWWLedAnimationQ::isFull() {
 	return _count == _size;
 }
 
 
-
-/**
- * Add an animation to the queue
- *
- * @param RGBWWLedAnimation* 	animation	pointer to Animation object
- * @return	bool
- * @retval 	true 	successfully inserted object queue
- * @retval	false	did not insert object into queue
- */
 bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
 	if (!isFull()){
 		_count++;
@@ -274,9 +211,7 @@ bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
 	return false;
 }
 
-/**
- * Empty Queue and delete all objects stored
- */
+
 void RGBWWLedAnimationQ::clear() {
 	while(!isEmpty()) {
 		RGBWWLedAnimation* animation = pop();
@@ -286,11 +221,7 @@ void RGBWWLedAnimationQ::clear() {
 	}
 }
 
-/**
- * Returns first Animation object pointer but keeps it in the queue
- *
- * @return RGBWWLedAnimation*
- */
+
 RGBWWLedAnimation* RGBWWLedAnimationQ::peek() {
 	if (!isEmpty()) {
         return q[_back];
@@ -298,11 +229,7 @@ RGBWWLedAnimation* RGBWWLedAnimationQ::peek() {
 	return NULL;
 }
 
-/**
- *	Returns first Animation object pointer and removes it from queue
- *
- * @return RGBWWLedAnimation*
- */
+
 RGBWWLedAnimation* RGBWWLedAnimationQ::pop() {
 	RGBWWLedAnimation* tmpptr;
 	if (!isEmpty()) {
@@ -314,5 +241,3 @@ RGBWWLedAnimation* RGBWWLedAnimationQ::pop() {
 	}
 	return NULL;
 }
-
-
