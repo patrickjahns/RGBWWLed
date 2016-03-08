@@ -8,28 +8,7 @@
 #include "RGBWWLed.h"
 
 
-//struct for RGBW
-struct RGBW {
-    int r, g, b, w;
-    RGBW() {}
-    RGBW(int red, int green, int blue, int white) : r(red), g(green), b(blue), w(white) {}
-    RGBW(const RGBW& rgbw)
-    {
-        r = rgbw.r;
-        g = rgbw.g;
-        b = rgbw.b;
-        w = rgbw.w;
-    }
 
-    RGBW& operator= (const RGBW& rgbw)
-    {
-        r = rgbw.r;
-        g = rgbw.g;
-        b = rgbw.b;
-        w = rgbw.w;
-        return *this;
-    }
-};
 //struct for RGBW + Kelvin
 struct RGBWK {
     int r, g, b, w, k;
@@ -57,35 +36,7 @@ struct RGBWK {
     }
 };
 
-// struct for HSV
-struct HSV {
-    int h, s, v;
-    HSV() {}
-    HSV(int hue, int sat, int val) : h(hue), s(sat), v(val) {}
 
-    //construct from float values
-    HSV( float hue, float sat, float val) {
-        h = (constrain(hue, 0.0, 360.0) / 360) * (PWMHUEWHEELMAX);
-        s = (constrain(sat, 0.0, 100.0) / 100) * (PWMMAXVAL);
-        v = (constrain(val, 0.0, 100.0) / 100) * (PWMMAXVAL);
-    }
-
-    HSV(const HSV& hsv)
-    {
-        h = hsv.h;
-        s = hsv.s;
-        v = hsv.v;
-    }
-
-    HSV& operator= (const HSV& hsv)
-    {
-        h = hsv.h;
-        s = hsv.s;
-        v = hsv.v;
-        return *this;
-    }
-
-};
 
 // struct for HSV + Kelvin
 struct HSVK {
