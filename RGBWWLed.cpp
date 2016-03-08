@@ -21,13 +21,13 @@ RGBWWLed::RGBWWLed() {
 	_colormode = RGB;
 	_current_color = HSVK(0, 0, 0);
 	_hsvmode = NORMAL;
-	_WarmWhiteKelvin = WARMWHITEKELVIN;
-	_ColdWhiteKelvin = COLDWHITEKELVIN;
+	_WarmWhiteKelvin = RGBWW_WARMWHITEKELVIN;
+	_ColdWhiteKelvin = RGBWW_COLDWHITEKELVIN;
 	_currentAnimation = NULL;
-	_animationQ = new RGBWWLedAnimationQ(ANIMATIONQSIZE);
+	_animationQ = new RGBWWLedAnimationQ(RGBWW_ANIMATIONQSIZE);
 	_pwm_output = NULL;
 	createHueWheel();
-	setBrightnessCorrection(PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH, PWMWIDTH);
+	setBrightnessCorrection(RGBWW_PWMWIDTH, RGBWW_PWMWIDTH, RGBWW_PWMWIDTH, RGBWW_PWMWIDTH, RGBWW_PWMWIDTH);
 }
 
 RGBWWLed::~RGBWWLed() {
@@ -50,11 +50,11 @@ void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN,
     Change Mode for color calculations
  */
 
-void RGBWWLed::setColorMode(COLORMODE m) {
+void RGBWWLed::setColorMode(RGBWW_COLORMODE m) {
 	_colormode = m;
 }
 
-COLORMODE RGBWWLed::getColorMode() {
+RGBWW_COLORMODE RGBWWLed::getColorMode() {
 	return _colormode;
 }
 /**
@@ -62,11 +62,11 @@ COLORMODE RGBWWLed::getColorMode() {
     Change HSV to RGBW calculation Model
 
  */
-void RGBWWLed::setHSVmode(HSVMODE m) {
+void RGBWWLed::setHSVmode(RGBWW_HSVMODE m) {
 	_hsvmode = m;
 }
 
-HSVMODE RGBWWLed::getHSVmode() {
+RGBWW_HSVMODE RGBWWLed::getHSVmode() {
 	return _hsvmode;
 }
 
@@ -82,20 +82,20 @@ HSVMODE RGBWWLed::getHSVmode() {
 
  */
 void RGBWWLed::setBrightnessCorrection(int r, int g, int b, int ww, int cw) {
-	_BrightnessFactor[0] = (constrain(r, 0, 100)/100) * PWMWIDTH;
-	_BrightnessFactor[1] = (constrain(g, 0, 100)/100) * PWMWIDTH;
-	_BrightnessFactor[2] = (constrain(b, 0, 100)/100) * PWMWIDTH;
-	_BrightnessFactor[3] = (constrain(cw, 0, 100)/100) * PWMWIDTH;
-	_BrightnessFactor[4] = (constrain(ww, 0, 100)/100) * PWMWIDTH;
+	_BrightnessFactor[0] = (constrain(r, 0, 100)/100) * RGBWW_PWMWIDTH;
+	_BrightnessFactor[1] = (constrain(g, 0, 100)/100) * RGBWW_PWMWIDTH;
+	_BrightnessFactor[2] = (constrain(b, 0, 100)/100) * RGBWW_PWMWIDTH;
+	_BrightnessFactor[3] = (constrain(cw, 0, 100)/100) * RGBWW_PWMWIDTH;
+	_BrightnessFactor[4] = (constrain(ww, 0, 100)/100) * RGBWW_PWMWIDTH;
 
 };
 
 void RGBWWLed::getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw) {
-	r = _BrightnessFactor[0]/PWMWIDTH;
-	g = _BrightnessFactor[1]/PWMWIDTH;
-	b = _BrightnessFactor[2]/PWMWIDTH;
-	ww = _BrightnessFactor[3]/PWMWIDTH;
-	cw = _BrightnessFactor[4]/PWMWIDTH;
+	r = _BrightnessFactor[0]/RGBWW_PWMWIDTH;
+	g = _BrightnessFactor[1]/RGBWW_PWMWIDTH;
+	b = _BrightnessFactor[2]/RGBWW_PWMWIDTH;
+	ww = _BrightnessFactor[3]/RGBWW_PWMWIDTH;
+	cw = _BrightnessFactor[4]/RGBWW_PWMWIDTH;
 }
 
 
@@ -187,12 +187,12 @@ void RGBWWLed::setHSVcorrection(float red, float yellow, float green, float cyan
 }
 
 void RGBWWLed::getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta) {
-	red = -1 * (float(_HueWheelSector[6] - 6*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
-	yellow = -1 * (float(_HueWheelSector[1] - 1*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
-	green = -1 * (float(_HueWheelSector[2] - 2*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
-	cyan = -1 * (float(_HueWheelSector[3] - 3*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
-	blue = -1 * (float(_HueWheelSector[4] - 4*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
-	magenta = -1 * (float(_HueWheelSector[5] - 5*PWMMAXVAL)/ float(PWMMAXVAL)) * 60.0;
+	red = -1 * (float(_HueWheelSector[6] - 6*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
+	yellow = -1 * (float(_HueWheelSector[1] - 1*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
+	green = -1 * (float(_HueWheelSector[2] - 2*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
+	cyan = -1 * (float(_HueWheelSector[3] - 3*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
+	blue = -1 * (float(_HueWheelSector[4] - 4*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
+	magenta = -1 * (float(_HueWheelSector[5] - 5*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
 
 }
 
@@ -221,11 +221,11 @@ void RGBWWLed::setOutput(RGBWK c) {
 	int color[5];
 	int ww, cw;
 	whiteBalance(c, ww, cw);
-	color[0] = (c.r * _BrightnessFactor[0]) >> PWMDEPTH;
-	color[1] = (c.g * _BrightnessFactor[1]) >> PWMDEPTH;
-	color[2] = (c.b * _BrightnessFactor[2]) >> PWMDEPTH;
-	color[3] = (ww * _BrightnessFactor[3]) >> PWMDEPTH;
-	color[4] = (cw * _BrightnessFactor[4]) >> PWMDEPTH;
+	color[0] = (c.r * _BrightnessFactor[0]) >> RGBWW_PWMDEPTH;
+	color[1] = (c.g * _BrightnessFactor[1]) >> RGBWW_PWMDEPTH;
+	color[2] = (c.b * _BrightnessFactor[2]) >> RGBWW_PWMDEPTH;
+	color[3] = (ww * _BrightnessFactor[3]) >> RGBWW_PWMDEPTH;
+	color[4] = (cw * _BrightnessFactor[4]) >> RGBWW_PWMDEPTH;
 	setOutputRaw(color[0], color[1], color[2], color[3], color[4]);
 }
 
@@ -270,7 +270,7 @@ bool RGBWWLed::show() {
 	#ifdef ARDUINO
 		//only need this part when using arduino
 		long now = millis();
-		if (now - last_active < MINTIMEDIFF) {
+		if (now - last_active < RGBWW_MINTIMEDIFF) {
 			// Interval hasn't passed yet
 			return true;
 		}
@@ -292,7 +292,6 @@ bool RGBWWLed::show() {
 		cleanupCurrentAnimation();
 		//callback animation finished
 		if(_animationcallback != NULL ){
-			DEBUG_RGB("RGBWW callback ");
 			_animationcallback(this);
 		}
 	}
@@ -344,7 +343,7 @@ void RGBWWLed::setHSV(HSVK& color, int time, int direction) {
 }
 
 void RGBWWLed::setHSV(HSVK& color, int time, int direction, bool q) {
-	if (time == 0 || time < MINTIMEDIFF) {
+	if (time == 0 || time < RGBWW_MINTIMEDIFF) {
 		// no animation - setting color directly
 		if (!q) {
 			clearAnimationQ();
@@ -365,7 +364,7 @@ void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction, boo
 	// only change color if it is different
 	if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  || colorFrom.k != color.k  ) {
 
-		if (time == 0 || time < MINTIMEDIFF) {
+		if (time == 0 || time < RGBWW_MINTIMEDIFF) {
 			// no animation - setting color directly
 			if (!q) {
 				clearAnimationQ();
@@ -415,16 +414,16 @@ bool RGBWWLed::isAnimationActive() {
 	switch(_colormode) {
 	case RGBWWCW:
 		if (_WarmWhiteKelvin <= rgbw.k && _ColdWhiteKelvin >= rgbw.k) {
-			int wwfactor = ((_ColdWhiteKelvin - rgbw.k) << PWMDEPTH) /  (_ColdWhiteKelvin - _WarmWhiteKelvin);
+			int wwfactor = ((_ColdWhiteKelvin - rgbw.k) << RGBWW_PWMDEPTH) /  (_ColdWhiteKelvin - _WarmWhiteKelvin);
 			//balance between CW and WW Leds
-			ww = (rgbw.w * wwfactor) >> PWMDEPTH;
-			cw = (rgbw.w * (1 - wwfactor)) >> PWMDEPTH;
+			ww = (rgbw.w * wwfactor) >> RGBWW_PWMDEPTH;
+			cw = (rgbw.w * (1 - wwfactor)) >> RGBWW_PWMDEPTH;
 		} else {
+			// if kelvin outside range - different calculation algorithm
+			// for now we asume a neutral white (i.e 0.5 CW, 0.5 WW)
 			ww = rgbw.w/2;
 			cw = rgbw.w/2;
 		}
-		// if kelvin outside range - different calculation algorithm
-		// for now we asume a neutral white (i.e 0.5 CW, 0.5 WW)
 		break;
 	case RGBCW:
 		//TODO implement valid algorithm
@@ -451,7 +450,7 @@ void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw) {
 	HSVtoRGB(hsv, rgbw, _hsvmode);
 }
 
-void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, HSVMODE m) {
+void RGBWWLed::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE m) {
 	switch(m) {
 	case SPEKTRUM: HSVtoRGBspektrum(hsv, rgbw); break;
 	case RAINBOW: HSVtoRGBrainbow(hsv, rgbw); break;
@@ -497,7 +496,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 	//gamma correction
 	val = dim_curve[hsv.v];
 	sat = hsv.s;
-	sat = PWMMAXVAL-dim_curve[PWMMAXVAL-sat];
+	sat = RGBWW_PWMMAXVAL-dim_curve[RGBWW_PWMMAXVAL-sat];
 	//sat = hsv.s;
 
 	rgbw.k = hsv.k;
@@ -536,7 +535,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
         Sector 1 from 25 - 255
         Sector 6 from 1275 - 1530 && 0 - 25
 		 */
-		chroma = (sat * val)/PWMMAXVAL;
+		chroma = (sat * val)/RGBWW_PWMMAXVAL;
 		m = val - chroma;
 		//debugRGBW("CHR %i",chroma);
 		//debugRGBW("M   %i", m);
@@ -544,7 +543,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 		if ( hue < _HueWheelSector[0] || (hue > _HueWheelSector[5] && hue <= _HueWheelSector[6])) {
 			//debugRGBW("Sector 6");
 			if (hue < _HueWheelSector[0]) {
-				fract = PWMMAXVAL + hue ;
+				fract = RGBWW_PWMMAXVAL + hue ;
 			} else {
 				fract = hue - _HueWheelSector[5];
 			}
@@ -553,7 +552,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 			g = 0;
 			//debugRGBW("%i", fract);
 			//debugRGBW("%i",_HueWheelSectorWidth[5]);
-			b = ( chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[5])) >> PWMDEPTH;
+			b = ( chroma * (RGBWW_PWMMAXVAL - (RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[5])) >> RGBWW_PWMDEPTH;
 
 		} else if (  hue <= _HueWheelSector[1]  || hue > _HueWheelSector[6]) {
 			// Sector 1
@@ -561,17 +560,17 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 			if (hue > _HueWheelSector[6]) {
 				fract = hue - _HueWheelSector[6];
 			} else {
-				fract = hue + (PWMHUEWHEELMAX - _HueWheelSector[6]);
+				fract = hue + (RGBWW_PWMHUEWHEELMAX - _HueWheelSector[6]);
 			}
 			r = chroma;
-			g = (chroma * ((PWMMAXVAL * fract) / _HueWheelSectorWidth[0])) >> PWMDEPTH;
+			g = (chroma * ((RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[0])) >> RGBWW_PWMDEPTH;
 			b = 0;
 
 		} else if (hue <= _HueWheelSector[2]) {
 			// Sector 2
 			//debugRGBW("Sector 2");
 			fract = hue - _HueWheelSector[1];
-			r = (chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[1])) >> PWMDEPTH;
+			r = (chroma * (RGBWW_PWMMAXVAL - (RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[1])) >> RGBWW_PWMDEPTH;
 			g = chroma;
 			b = 0;
 
@@ -581,21 +580,21 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 			fract = hue - _HueWheelSector[2];
 			r = 0;
 			g = chroma;
-			b = (chroma * ((PWMMAXVAL * fract) / _HueWheelSectorWidth[2])) >> PWMDEPTH;
+			b = (chroma * ((RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[2])) >> RGBWW_PWMDEPTH;
 
 		} else if (hue <= _HueWheelSector[4]) {
 			// Sector 4
 			//debugRGBW("Sector 4");
 			fract = hue - _HueWheelSector[3];
 			r = 0;
-			g =(chroma * (PWMMAXVAL - (PWMMAXVAL * fract) / _HueWheelSectorWidth[3])) >> PWMDEPTH;
+			g =(chroma * (RGBWW_PWMMAXVAL - (RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[3])) >> RGBWW_PWMDEPTH;
 			b = chroma;
 
 		} else  {
 			// Sector 5
 			//debugRGBW("Sector 5");
 			fract = hue - _HueWheelSector[4];
-			r = (chroma * ((PWMMAXVAL * fract) / _HueWheelSectorWidth[4])) >> PWMDEPTH;
+			r = (chroma * ((RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[4])) >> RGBWW_PWMDEPTH;
 			g = 0;
 			b = chroma;
 
@@ -646,8 +645,8 @@ Helper function to create the 6 sectors for the HUE wheel
 void RGBWWLed::createHueWheel() {
 	_HueWheelSector[0] = 0;
 	for (int i = 1; i <= 6; ++i) {
-		_HueWheelSector[i] = i*PWMMAXVAL;
-		_HueWheelSectorWidth[i-1] = PWMMAXVAL;
+		_HueWheelSector[i] = i*RGBWW_PWMMAXVAL;
+		_HueWheelSectorWidth[i-1] = RGBWW_PWMMAXVAL;
 	}
 }
 
@@ -655,8 +654,8 @@ void RGBWWLed::createHueWheel() {
 Helper function to keep Hue between 0 - HueWheelMax
  */
 void RGBWWLed::circleHue(int& hue ) {
-	while (hue >= PWMHUEWHEELMAX) hue -= PWMHUEWHEELMAX;
-	while (hue < 0) hue += PWMHUEWHEELMAX;
+	while (hue >= RGBWW_PWMHUEWHEELMAX) hue -= RGBWW_PWMHUEWHEELMAX;
+	while (hue < 0) hue += RGBWW_PWMHUEWHEELMAX;
 
 }
 
@@ -667,23 +666,23 @@ Converts to the according pwm size (8bit/10bit)
 int RGBWWLed::parseColorCorrection(float val) {
 	if (val >= 29.5) val = 29.5;
 	if (val <= -29.5) val = -29.5;
-	return int(((val / 60) * (PWMMAXVAL)) * -1);
+	return int(((val / 60) * (RGBWW_PWMMAXVAL)) * -1);
 }
 
 int RGBWWLed::parseHue(float hue) {
 	hue = constrain(hue, 0.0, 360.0);
-	return int((hue / 360) * (PWMHUEWHEELMAX));
+	return int((hue / 360) * (RGBWW_PWMHUEWHEELMAX));
 
 }
 
 int RGBWWLed::parseSat(float sat) {
 	sat = constrain(sat, 0.0, 100.0);
-	return int((sat / 100) * (PWMMAXVAL));
+	return int((sat / 100) * (RGBWW_PWMMAXVAL));
 }
 
 int RGBWWLed::parseVal(float val){
 	val = constrain(val, 0.0, 100.0);
-	return int((val / 100) * (PWMMAXVAL));
+	return int((val / 100) * (RGBWW_PWMMAXVAL));
 }
 
 

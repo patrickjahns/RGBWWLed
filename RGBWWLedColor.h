@@ -48,17 +48,17 @@ struct HSVK {
 
     //construct from float values
     HSVK( float hue, float sat, float val) {
-        h = (constrain(hue, 0.0, 360.0) / 360) * (PWMHUEWHEELMAX);
-        s = (constrain(sat, 0.0, 100.0) / 100) * (PWMMAXVAL);
-        v = (constrain(val, 0.0, 100.0) / 100) * (PWMMAXVAL);
+        h = (constrain(hue, 0.0, 360.0) / 360) * (RGBWW_PWMHUEWHEELMAX);
+        s = (constrain(sat, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
+        v = (constrain(val, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
         //TODO: default value für White color?
         k = 0;
     }
 
     HSVK( float hue, float sat, float val, int kelvin) {
-        h = (constrain(hue, 0.0, 360.0) / 360) * (PWMHUEWHEELMAX);
-        s = (constrain(sat, 0.0, 100.0) / 100) * (PWMMAXVAL);
-        v = (constrain(val, 0.0, 100.0) / 100) * (PWMMAXVAL);
+        h = (constrain(hue, 0.0, 360.0) / 360) * (RGBWW_PWMHUEWHEELMAX);
+        s = (constrain(sat, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
+        v = (constrain(val, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
         k = constrain(kelvin, 0, 10000);
     }
 
@@ -80,14 +80,14 @@ struct HSVK {
     }
 
     void asRadian(float& hue, float& sat, float& val) {
-		hue = (float(h) / float(PWMHUEWHEELMAX)) * 360.0;
-		sat = (float(s) / float(PWMMAXVAL)) * 100.0;
-		val = (float(v) / float(PWMMAXVAL)) * 100.0;
+		hue = (float(h) / float(RGBWW_PWMHUEWHEELMAX)) * 360.0;
+		sat = (float(s) / float(RGBWW_PWMMAXVAL)) * 100.0;
+		val = (float(v) / float(RGBWW_PWMMAXVAL)) * 100.0;
     }
     void asRadian(float& hue, float& sat, float& val, int& kelvin) {
-    	hue = (float(h) / float(PWMHUEWHEELMAX)) * 360.0;
-		sat = (float(s) / float(PWMMAXVAL)) * 100.0;
-		val = (float(v) / float(PWMMAXVAL)) * 100.0;
+    	hue = (float(h) / float(RGBWW_PWMHUEWHEELMAX)) * 360.0;
+		sat = (float(s) / float(RGBWW_PWMMAXVAL)) * 100.0;
+		val = (float(v) / float(RGBWW_PWMMAXVAL)) * 100.0;
 		kelvin = k;
     }
 

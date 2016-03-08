@@ -32,7 +32,7 @@ HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& dire
 	rgbled = led;
 	_finalcolor = color;
 	_hasbasecolor = false;
-	_steps = time / MINTIMEDIFF;
+	_steps = time / RGBWW_MINTIMEDIFF;
 	_huedirection = direction;
 	_currentstep = 0;
 	//debugRGBW("== //HSVT Constructor =====");
@@ -46,7 +46,7 @@ HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int
 	_finalcolor = color;
 	_basecolor = colorFrom;
 	_hasbasecolor = true;
-	_steps = tm / MINTIMEDIFF;
+	_steps = tm / RGBWW_MINTIMEDIFF;
 	_huedirection = direction;
 	_currentstep = 0;
 	//debugRGBW("== //HSVT Constructor =====");
@@ -60,8 +60,8 @@ void HSVTransition::init() {
 	}
 	_currentcolor = _basecolor;
 	// calculate hue direction
-	l = (_basecolor.h + PWMHUEWHEELMAX - _finalcolor.h) % PWMHUEWHEELMAX;
-	r = (_finalcolor.h + PWMHUEWHEELMAX - _basecolor.h) % PWMHUEWHEELMAX;
+	l = (_basecolor.h + RGBWW_PWMHUEWHEELMAX - _finalcolor.h) % RGBWW_PWMHUEWHEELMAX;
+	r = (_finalcolor.h + RGBWW_PWMHUEWHEELMAX - _basecolor.h) % RGBWW_PWMHUEWHEELMAX;
 	// decide on direction of turn depending on size
 	d = (l < r)? -1 : 1;
 

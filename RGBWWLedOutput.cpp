@@ -7,7 +7,7 @@
 #include "RGBWWLed.h"
 #include "RGBWWLedOutput.h"
 
-#ifdef USE_ESP_HWPWM
+#ifdef RGBWW_USE_ESP_HWPWM
 /****************************************************************
  	SMING -> we can use hardware pwm from ESP
  ***************************************************************/
@@ -49,8 +49,8 @@ void PWMOutput::setRed(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
 	//debugRGBW("RED - new duty %i, old duty %i channel %i", duty, getRed(), COLORS::RED);
 	if (duty != getRed()) {
-        pwm_set_duty(duty, COLORS::RED);
-        _duty[COLORS::RED] = pwm_get_duty(COLORS::RED);
+        pwm_set_duty(duty, RGBWW_COLORS::RED);
+        _duty[RGBWW_COLORS::RED] = pwm_get_duty(RGBWW_COLORS::RED);
 		
 		if(update) {
 			pwm_start();
@@ -59,15 +59,15 @@ void PWMOutput::setRed(int value, bool update /* = true */) {
 }
 
 int	PWMOutput::getRed(){
-	return pwm_get_duty(COLORS::RED);
+	return pwm_get_duty(RGBWW_COLORS::RED);
 }
 
 void PWMOutput::setGreen(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
 	//debugRGBW("GREEN - new duty %i, old duty %i channel %i", duty, getBlue(), COLORS::BLUE);
     if (duty != getGreen()) {
-        pwm_set_duty(duty, COLORS::GREEN);
-        _duty[COLORS::GREEN] = pwm_get_duty(COLORS::GREEN);
+        pwm_set_duty(duty, RGBWW_COLORS::GREEN);
+        _duty[RGBWW_COLORS::GREEN] = pwm_get_duty(RGBWW_COLORS::GREEN);
 		if(update) {
 			pwm_start();
 		}
@@ -75,15 +75,15 @@ void PWMOutput::setGreen(int value, bool update /* = true */) {
 }
 
 int	PWMOutput::getGreen() {
-	return pwm_get_duty(COLORS::GREEN);
+	return pwm_get_duty(RGBWW_COLORS::GREEN);
 }
 
 void PWMOutput::setBlue(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
 	//debugRGBW("BLUE - new duty %i, old duty %i channel %i", duty, getGreen(), COLORS::GREEN);
     if (duty != getBlue()) {
-        pwm_set_duty(duty, COLORS::BLUE);
-        _duty[COLORS::BLUE] = pwm_get_duty(COLORS::BLUE);
+        pwm_set_duty(duty, RGBWW_COLORS::BLUE);
+        _duty[RGBWW_COLORS::BLUE] = pwm_get_duty(RGBWW_COLORS::BLUE);
 		if(update) {
 			pwm_start();
 		}
@@ -91,15 +91,15 @@ void PWMOutput::setBlue(int value, bool update /* = true */) {
 }
 
 int PWMOutput::getBlue(){
-	return pwm_get_duty(COLORS::BLUE);
+	return pwm_get_duty(RGBWW_COLORS::BLUE);
 }
 
 void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
     //debugRGBW("WW - new duty %i, old duty %i channel %i", duty, getWarmWhite(), COLORS::WW);
 	if (duty != getWarmWhite()) {
-        pwm_set_duty(duty, COLORS::WW);
-        _duty[COLORS::WW] = pwm_get_duty(COLORS::WW);
+        pwm_set_duty(duty, RGBWW_COLORS::WW);
+        _duty[RGBWW_COLORS::WW] = pwm_get_duty(RGBWW_COLORS::WW);
 		if(update) {
 			pwm_start();
 		}
@@ -107,22 +107,22 @@ void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
 }
 
 int	PWMOutput::getWarmWhite() {
-	return pwm_get_duty(COLORS::WW);
+	return pwm_get_duty(RGBWW_COLORS::WW);
 }
 
 void PWMOutput::setColdWhite(int value, bool update /* = true */) {
 	int duty = parseDuty(value);
 	//debugRGBW("CW - new duty %i, old duty %i channel %i", duty, getColdWhite(), COLORS::CW);
     if (duty != getColdWhite()) {
-        pwm_set_duty(duty, COLORS::CW);
-        _duty[COLORS::CW] = pwm_get_duty(COLORS::CW);
+        pwm_set_duty(duty, RGBWW_COLORS::CW);
+        _duty[RGBWW_COLORS::CW] = pwm_get_duty(RGBWW_COLORS::CW);
 		if(update) {
 			pwm_start();
 		}
 	}
 }
 int	PWMOutput::getColdWhite(){
-	return pwm_get_duty(COLORS::CW);
+	return pwm_get_duty(RGBWW_COLORS::CW);
 }
 
 void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldwhite){
@@ -136,7 +136,7 @@ void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldw
 
 
 int PWMOutput::parseDuty(int duty) {
-	return (duty*_maxduty)/PWMMAXVAL;
+	return (duty*_maxduty)/RGBWW_PWMMAXVAL;
 }
 
 
@@ -147,11 +147,11 @@ int PWMOutput::parseDuty(int duty) {
  ******************************************************/
 PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq) {
 
-	_pins[COLORS::RED] = redPin;
-	_pins[COLORS::GREEN] = greenPin;
-	_pins[COLORS::BLUE] = bluePin;
-	_pins[COLORS::WW] = wwPin;
-	_pins[COLORS::CW] = cwPin;
+	_pins[RGBWW_COLORS::RED] = redPin;
+	_pins[RGBWW_COLORS::GREEN] = greenPin;
+	_pins[RGBWW_COLORS::BLUE] = bluePin;
+	_pins[RGBWW_COLORS::WW] = wwPin;
+	_pins[RGBWW_COLORS::CW] = cwPin;
 	pinMode(redPin, OUTPUT);
 	pinMode(greenPin, OUTPUT);
 	pinMode(bluePin, OUTPUT);
@@ -171,50 +171,50 @@ int	PWMOutput::getFrequency() {
 }
 
 void PWMOutput::setRed(int value, bool update /* = true */) {
-	_duty[COLORS::RED] = value;
-	analogWrite(_pins[COLORS::RED], value);
+	_duty[RGBWW_COLORS::RED] = value;
+	analogWrite(_pins[RGBWW_COLORS::RED], value);
 }
 
 int PWMOutput::getRed() {
-	return _duty[COLORS::RED];
+	return _duty[RGBWW_COLORS::RED];
 }
 
 
 void PWMOutput::setGreen(int value, bool update /* = true */) {
-	_duty[COLORS::GREEN] = value;
-	analogWrite(_pins[COLORS::GREEN], value);
+	_duty[RGBWW_COLORS::GREEN] = value;
+	analogWrite(_pins[RGBWW_COLORS::GREEN], value);
 }
 
 int PWMOutput::getGreen() {
-	return _duty[COLORS::GREEN];
+	return _duty[RGBWW_COLORS::GREEN];
 }
 
 void PWMOutput::setBlue(int value, bool update /* = true */) {
-	_duty[COLORS::BLUE] = value;
-	analogWrite(_pins[COLORS::BLUE], value);
+	_duty[RGBWW_COLORS::BLUE] = value;
+	analogWrite(_pins[RGBWW_COLORS::BLUE], value);
 }
 
 int	PWMOutput::getBlue() {
-	return _duty[COLORS::BLUE];
+	return _duty[RGBWW_COLORS::BLUE];
 }
 
 
 void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
-	_duty[COLORS::WW] = value;
-	analogWrite(_pins[COLORS::WW], value);
+	_duty[RGBWW_COLORS::WW] = value;
+	analogWrite(_pins[RGBWW_COLORS::WW], value);
 }
 
 int PWMOutput::getWarmWhite() {
-	return _duty[COLORS::WW];
+	return _duty[RGBWW_COLORS::WW];
 }
 
 void PWMOutput::setColdWhite(int value, bool update /* = true */) {
-	_duty[COLORS::CW] = value;
-	analogWrite(_pins[COLORS::CW], value);
+	_duty[RGBWW_COLORS::CW] = value;
+	analogWrite(_pins[RGBWW_COLORS::CW], value);
 }
 
 int	PWMOutput::getColdWhite() {
-	return _duty[COLORS::CW];
+	return _duty[RGBWW_COLORS::CW];
 }
 
 void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldwhite){
@@ -225,6 +225,9 @@ void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldw
 	setColdWhite(coldwhite);
 }
 
-
-
+/*
+int PWMOutput::parseDuty(int duty) {
+	return (duty*_maxduty)/RGBWW_PWMMAXVAL;
+}
+*/
 #endif //USE_ESP_HWPWM

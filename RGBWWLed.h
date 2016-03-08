@@ -10,37 +10,37 @@
 
 
 #define RGBWW_VERSION "0.6"
-#define PWMDEPTH 10
-#define PWMWIDTH int(pow(2, PWMDEPTH))
-#define	PWMMAXVAL int(PWMWIDTH - 1)
-#define	PWMHUEWHEELMAX int(PWMMAXVAL * 6)
+#define RGBWW_PWMDEPTH 10
+#define RGBWW_PWMWIDTH int(pow(2, RGBWW_PWMDEPTH))
+#define	RGBWW_PWMMAXVAL int(RGBWW_PWMWIDTH - 1)
+#define	RGBWW_PWMHUEWHEELMAX int(RGBWW_PWMMAXVAL * 6)
 
-#define UPDATEFREQUENCY 50
-#define MINTIMEDIFF  int(1000 / UPDATEFREQUENCY)
-#define ANIMATIONQSIZE 50
-#define	WARMWHITEKELVIN 2700
-#define COLDWHITEKELVIN 6000
+#define RGBWW_UPDATEFREQUENCY 50
+#define RGBWW_MINTIMEDIFF  int(1000 / RGBWW_UPDATEFREQUENCY)
+#define RGBWW_ANIMATIONQSIZE 50
+#define	RGBWW_WARMWHITEKELVIN 2700
+#define RGBWW_COLDWHITEKELVIN 6000
 
 #include <ARDUINO.h>
 #ifndef ARDUINO
 	#include "../../SmingCore/SmingCore.h"
 #endif
-#define USE_ESP_HWPWM
-#define DEBUG_RGB
+#define RGBWW_USE_ESP_HWPWM
+#define DEBUG_RGBWW
 #include "debugUtils.h"
 #include "RGBWWLedColor.h"
 #include "RGBWWLedAnimation.h"
 #include "RGBWWLedOutput.h"
 
 
-enum COLORMODE {
+enum RGBWW_COLORMODE {
 	RGB = 0,
 	RGBWW = 1,
 	RGBCW = 2,
 	RGBWWCW = 3
 };
 
-enum HSVMODE {
+enum RGBWW_HSVMODE {
 	NORMAL = 0,
 	SPEKTRUM = 1,
 	RAINBOW = 2
@@ -55,16 +55,16 @@ class RGBWWLed
 public:
 	//init & settings
 	RGBWWLed();
-	virtual ~RGBWWLed();
-	void		setColorMode(COLORMODE mode);
-	COLORMODE 	getColorMode();
-	void    	setHSVmode(HSVMODE mode);
-	HSVMODE 	getHSVmode();
-	void    	init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
-	void    	setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
-	void    	getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
-	void    	setBrightnessCorrection(int r, int g, int b, int ww, int cw);
-	void    	getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
+	virtual 		~RGBWWLed();
+	void			setColorMode(RGBWW_COLORMODE mode);
+	RGBWW_COLORMODE getColorMode();
+	void    		setHSVmode(RGBWW_HSVMODE mode);
+	RGBWW_HSVMODE	getHSVmode();
+	void    		init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
+	void    		setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
+	void    		getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
+	void    		setBrightnessCorrection(int r, int g, int b, int ww, int cw);
+	void    		getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
 
 
 	//output related
@@ -93,7 +93,7 @@ public:
 	//colorutils
 	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
 	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
-	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, HSVMODE mode);
+	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE mode);
 	void    	HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw);
 	void    	HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw);
 	void    	HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw);
@@ -114,8 +114,8 @@ private:
 	int			_WarmWhiteKelvin;
 	int			_ColdWhiteKelvin;
 	
-	COLORMODE       _colormode;
-	HSVMODE         _hsvmode;
+	RGBWW_COLORMODE       _colormode;
+	RGBWW_HSVMODE         _hsvmode;
 	HSVK            _current_color;
 	RGBWK           _current_output;
 

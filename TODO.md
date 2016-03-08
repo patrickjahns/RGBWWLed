@@ -12,11 +12,12 @@
   - [ ] extend animation interface for effects (lower/faster/brighter/darker/color settings)
   	- [x] method for brighter/darker
   	- [x] method for faster/slower
+  	- [ ] method for changing params
   - [ ] create standard animations 
 
 - RGB controls
   - [ ] rgb to hsv conversion
-  - [ ] rgb transition methods 
+  - [ ] rgb transition methods -> use hsv transition
 
 
 # DONE

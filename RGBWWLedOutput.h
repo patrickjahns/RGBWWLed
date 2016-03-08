@@ -8,7 +8,7 @@
 #include "RGBWWLed.h"
 
 
-enum COLORS {
+enum RGBWW_COLORS {
 	RED = 0,
 	GREEN = 1,
 	BLUE = 2,
@@ -17,7 +17,7 @@ enum COLORS {
 	NUM_COLORS = 5
 };
 
-#ifdef USE_ESP_HWPWM
+#ifdef RGBWW_USE_ESP_HWPWM
 
 extern "C" {
 #include <pwm.h>
@@ -49,7 +49,7 @@ public:
 private:
 	int			parseDuty(int duty);
 	int			_freq;
-	int			_duty[COLORS::NUM_COLORS];
+	int			_duty[RGBWW_COLORS::NUM_COLORS];
 	int			_maxduty;
 
 	
