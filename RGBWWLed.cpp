@@ -671,8 +671,8 @@ Helper functions to parse hue,sat,val,colorcorrection
 Converts to the according pwm size (8bit/10bit)
  */
 int RGBWWLed::parseColorCorrection(float val) {
-	if (val >= 29.5) val = 29.5;
-	if (val <= -29.5) val = -29.5;
+	if (val >= 30.0) val = 30.0;
+	if (val <= -30.0) val = -30.0;
 	return int(((val / 60) * (RGBWW_PWMMAXVAL)) * -1);
 }
 
