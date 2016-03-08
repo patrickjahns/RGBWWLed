@@ -112,7 +112,7 @@ private:
 
 	RGBWWLed*    rgbled;
 
-	int         bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, int& base, int& current);
+	static 	int	bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, int& base, int& current);
 
 };
 

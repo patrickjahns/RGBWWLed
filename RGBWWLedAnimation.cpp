@@ -155,7 +155,7 @@ bool HSVTransition::run (int st) {
 	//calculate new colors with bresenham
 	_currentcolor.h = bresenham(_hueerror, _huecount, _steps, _dhue, _huestep, _basecolor.h, _currentcolor.h);
 	//fix hue
-	rgbled->circleHue(_currentcolor.h);
+	RGBWWColorUtils::circleHue(_currentcolor.h);
 	_currentcolor.s = bresenham(_saterror, _satcount, _steps, _dsat, _satstep, _basecolor.s, _currentcolor.s);
 	_currentcolor.v = bresenham(_valerror, _valcount, _steps, _dval, _valstep, _basecolor.v, _currentcolor.v);
 	_currentcolor.k = bresenham(_kelvinerror, _kelvincount, _steps, _dkelvin, _kelvinstep, _basecolor.k, _currentcolor.k);

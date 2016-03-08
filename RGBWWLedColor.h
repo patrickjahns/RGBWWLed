@@ -25,7 +25,27 @@
 #define RGBWWLedColor_h
 #include "RGBWWLed.h"
 
+enum RGBWW_COLORMODE {
+	RGB = 0,
+	RGBWW = 1,
+	RGBCW = 2,
+	RGBWWCW = 3
+};
 
+enum RGBWW_HSVMODE {
+	NORMAL = 0,
+	SPEKTRUM = 1,
+	RAINBOW = 2
+};
+
+enum RGBWW_COLORS {
+	RED = 0,
+	GREEN = 1,
+	BLUE = 2,
+	WW = 3,
+	CW = 4,
+	NUM_COLORS = 5
+};
 
 //struct for RGBW + Kelvin
 struct RGBWK {
@@ -66,17 +86,17 @@ struct HSVK {
 
     //construct from float values
     HSVK( float hue, float sat, float val) {
-        h = (constrain(hue, 0.0, 360.0) / 360) * (RGBWW_PWMHUEWHEELMAX);
-        s = (constrain(sat, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
-        v = (constrain(val, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
+        h = (constrain(hue, 0.0, 360.0) / 360) * RGBWW_PWMHUEWHEELMAX;
+        s = (constrain(sat, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
+        v = (constrain(val, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
         //TODO: default value für White color?
         k = 0;
     }
 
     HSVK( float hue, float sat, float val, int kelvin) {
-        h = (constrain(hue, 0.0, 360.0) / 360) * (RGBWW_PWMHUEWHEELMAX);
-        s = (constrain(sat, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
-        v = (constrain(val, 0.0, 100.0) / 100) * (RGBWW_PWMMAXVAL);
+        h = (constrain(hue, 0.0, 360.0) / 360) * RGBWW_PWMHUEWHEELMAX;
+        s = (constrain(sat, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
+        v = (constrain(val, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
         k = constrain(kelvin, 0, 10000);
     }
 
@@ -113,6 +133,58 @@ struct HSVK {
 
 };
 
+class RGBWWColorUtils {
+
+
+public:
+	RGBWWColorUtils();
+	virtual 		~RGBWWColorUtils();
+
+	void			setColorMode(RGBWW_COLORMODE mode);
+	RGBWW_COLORMODE getColorMode();
+	void    		setHSVmode(RGBWW_HSVMODE mode);
+	RGBWW_HSVMODE	getHSVmode();
+	void 			setWhiteTemperature(int WarmWhite, int ColdWhite);
+	void			getWhiteTemperature(int& WarmWhite, int& ColdWhite);
+	void    		setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
+	void    		getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
+	void    		setBrightnessCorrection(int r, int g, int b, int ww, int cw);
+	void    		getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
+
+	//colorutils
+	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
+	void		correctBrightness(int color[]);
+	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
+	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE mode);
+	void    	HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw);
+	void    	HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw);
+	void    	HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw);
+	void    	RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
+
+
+	//helpers
+	static void circleHue(int& hue);
+	static int 	parseColorCorrection(float val);
+
+private:
+	int         _BrightnessFactor[RGBWW_COLORS::NUM_COLORS];
+	int         _HueWheelSector[7];
+	int         _HueWheelSectorWidth[6];
+	int			_WarmWhiteKelvin;
+	int			_ColdWhiteKelvin;
+
+	RGBWW_COLORMODE       _colormode;
+	RGBWW_HSVMODE         _hsvmode;
+
+
+	void    	createHueWheel();
+
+};
+
+
+
+
+
 
 /*
 const uint8_t dim_curve[256] {
@@ -135,7 +207,7 @@ const uint8_t dim_curve[256] {
 };
  */
 
-const uint16_t dim_curve[1024] = {
+const uint16_t RGBWW_dim_curve[1024] = {
 		0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
 		2, 2, 2, 3, 3, 3, 3, 3, 3, 3,

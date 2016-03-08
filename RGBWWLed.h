@@ -53,21 +53,10 @@
 #include "RGBWWLedOutput.h"
 
 
-enum RGBWW_COLORMODE {
-	RGB = 0,
-	RGBWW = 1,
-	RGBCW = 2,
-	RGBWWCW = 3
-};
-
-enum RGBWW_HSVMODE {
-	NORMAL = 0,
-	SPEKTRUM = 1,
-	RAINBOW = 2
-};
 
 class RGBWWLedAnimation;
 class RGBWWLedAnimationQ;
+class RGBWWColorUtils;
 class PWMOutput;
 
 class RGBWWLed
@@ -76,16 +65,7 @@ public:
 	//init & settings
 	RGBWWLed();
 	virtual 		~RGBWWLed();
-	void			setColorMode(RGBWW_COLORMODE mode);
-	RGBWW_COLORMODE getColorMode();
-	void    		setHSVmode(RGBWW_HSVMODE mode);
-	RGBWW_HSVMODE	getHSVmode();
 	void    		init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
-	void    		setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
-	void    		getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
-	void    		setBrightnessCorrection(int r, int g, int b, int ww, int cw);
-	void    		getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
-
 
 	//output related
 	bool    	show();
@@ -109,52 +89,20 @@ public:
 	void		setAnimationSpeed(int speed);
 	void		setAnimationBrightness(int brightness);
 
-
-	//colorutils
-	//TODO: move to own class
-	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
-	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
-	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE mode);
-	void    	HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw);
-	void    	HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw);
-	void    	HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw);
-	void    	RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
-
-
-	//helpers
-	//TODO: move to own class/make static
-	int     	parseHue(float hue);
-	int     	parseSat(float sat);
-	int     	parseVal(float val);
-	void    	circleHue(int& hue);
-	int     	parseColorCorrection(float val);
-
 private:
-	int         _BrightnessFactor[5];
-	int         _HueWheelSector[7];
-	int         _HueWheelSectorWidth[6];
-	int			_WarmWhiteKelvin;
-	int			_ColdWhiteKelvin;
-	
-	RGBWW_COLORMODE       _colormode;
-	RGBWW_HSVMODE         _hsvmode;
+	unsigned long   last_active;
 	HSVK            _current_color;
 	RGBWK           _current_output;
-
-	unsigned long   last_active;
-
 	bool            _cancelAnimation;
 	bool            _clearAnimationQueue;
 	bool            _isAnimationActive;
-	void (*_animationcallback)(RGBWWLed* led) = NULL;
 
 	RGBWWLedAnimation*  	_currentAnimation;
 	RGBWWLedAnimationQ*  	_animationQ;
 	PWMOutput*				_pwm_output;
-
+	RGBWWColorUtils*		_color_utils;
+	void (*_animationcallback)(RGBWWLed* led) = NULL;
 	//helpers
-
-	void    createHueWheel(); //TODO: move to own class/make static
 	void    cleanupCurrentAnimation();
 	void    cleanupAnimationQ();
 

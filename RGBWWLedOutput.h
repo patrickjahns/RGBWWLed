@@ -24,15 +24,6 @@
 #include "RGBWWLed.h"
 
 
-enum RGBWW_COLORS {
-	RED = 0,
-	GREEN = 1,
-	BLUE = 2,
-	WW = 3,
-	CW = 4,
-	NUM_COLORS = 5
-};
-
 #ifdef RGBWW_USE_ESP_HWPWM
 
 extern "C" {
