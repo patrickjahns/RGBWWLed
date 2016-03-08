@@ -128,6 +128,20 @@ struct HSVK {
         return *this;
     }
 
+    void asRadian(float& hue, float& sat, float& val) {
+		hue = (float(h) / float(PWMHUEWHEELMAX)) * 360.0;
+		sat = (float(s) / float(PWMMAXVAL)) * 100.0;
+		val = (float(v) / float(PWMMAXVAL)) * 100.0;
+    }
+    void asRadian(float& hue, float& sat, float& val, int& kelvin) {
+    	hue = (float(h) / float(PWMHUEWHEELMAX)) * 360.0;
+		sat = (float(s) / float(PWMMAXVAL)) * 100.0;
+		val = (float(v) / float(PWMMAXVAL)) * 100.0;
+		kelvin = k;
+    }
+
+
+
 };
 
 #endif
