@@ -27,7 +27,7 @@
 
 
 /**************************************************************
-                setup, init and settings
+ *                setup, init and settings
  **************************************************************/
 
 RGBWWLed::RGBWWLed() {
@@ -56,14 +56,14 @@ RGBWWLed::~RGBWWLed() {
 	}
 }
 
-void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency) {
+void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency /* =200 */) {
 
 	_pwm_output = new PWMOutput(redPIN, greenPIN, bluePIN, wwPIN, cwPIN, pwmFrequency);
 
 }
 
 /**
-    Change Mode for color calculations
+ *  Change Mode for color calculations
  */
 
 void RGBWWLed::setColorMode(RGBWW_COLORMODE m) {
@@ -74,9 +74,9 @@ RGBWW_COLORMODE RGBWWLed::getColorMode() {
 	return _colormode;
 }
 /**
-
-    Change HSV to RGBW calculation Model
-
+ *
+ *  Change HSV to RGBW calculation Model
+ *
  */
 void RGBWWLed::setHSVmode(RGBWW_HSVMODE m) {
 	_hsvmode = m;
@@ -88,14 +88,14 @@ RGBWW_HSVMODE RGBWWLed::getHSVmode() {
 
 
 /**
-    Correct the Maximum brightness of a channel
-
-    @param r red channel (0.0 - 1.0)
-    @param g green channel (0.0 - 1.0)
-    @param b blue channel (0.0 - 1.0)
-    @param cw cold white channel (0.0 - 1.0)
-    @param wm warm white channel (0.0 - 1.0)
-
+ *     Correct the Maximum brightness of a channel
+ *
+ *     @param r red channel (0.0 - 1.0)
+ *    @param g green channel (0.0 - 1.0)
+ *    @param b blue channel (0.0 - 1.0)
+ *    @param cw cold white channel (0.0 - 1.0)
+ *    @param wm warm white channel (0.0 - 1.0)
+ *
  */
 void RGBWWLed::setBrightnessCorrection(int r, int g, int b, int ww, int cw) {
 	_BrightnessFactor[0] = (constrain(r, 0, 100)/100) * RGBWW_PWMWIDTH;
@@ -105,6 +105,7 @@ void RGBWWLed::setBrightnessCorrection(int r, int g, int b, int ww, int cw) {
 	_BrightnessFactor[4] = (constrain(ww, 0, 100)/100) * RGBWW_PWMWIDTH;
 
 };
+
 
 void RGBWWLed::getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw) {
 	r = _BrightnessFactor[0]/RGBWW_PWMWIDTH;
@@ -133,7 +134,7 @@ void RGBWWLed::setHSVcorrection(float red, float yellow, float green, float cyan
 	createHueWheel();
 	/*
 	debugRGBW("==  correctHSV  ==");
-	debugRGBW("==  before      ==");
+	debugRGBW("--  before      --");
 	debugRGBW("W0 %i", _HueWheelSectorWidth[0]);
 	debugRGBW("W1 %i", _HueWheelSectorWidth[1]);
 	debugRGBW("W2 %i", _HueWheelSectorWidth[2]);
@@ -182,7 +183,7 @@ void RGBWWLed::setHSVcorrection(float red, float yellow, float green, float cyan
 	_HueWheelSector[0] += parseColorCorrection(red);
 
 	/*
-	debugRGBW("==  after      ==");
+	debugRGBW("--  after      --");
 	debugRGBW("W0 %i", _HueWheelSectorWidth[0]);
 	debugRGBW("W1 %i", _HueWheelSectorWidth[1]);
 	debugRGBW("W2 %i", _HueWheelSectorWidth[2]);
@@ -213,7 +214,7 @@ void RGBWWLed::getHSVcorrection(float& red, float& yellow, float& green, float& 
 }
 
 /**************************************************************
-                    OUTPUT
+ *                     OUTPUT
  **************************************************************/
 
 void RGBWWLed::refresh() {
@@ -259,7 +260,7 @@ void RGBWWLed::setOutputRaw(int red, int green, int blue, int wwhite, int cwhite
 
 
 /**************************************************************
-                ANIMATION/TRANSITION
+ *                 ANIMATION/TRANSITION
  **************************************************************/
 
 
@@ -272,14 +273,13 @@ bool RGBWWLed::show() {
 	// check if we need to cancel effect
 	if (_cancelAnimation || _clearAnimationQueue) {
 
-		cleanupCurrentAnimation();
-		_cancelAnimation = false;
+		if (_cancelAnimation ) {
+			cleanupCurrentAnimation();
+		}
 
 		// cleanup Q if we cancel all effects
 		if (_clearAnimationQueue) {
-
-			clearAnimationQ();
-			_clearAnimationQueue = false;
+			cleanupAnimationQ();
 		}
 	}
 
@@ -290,9 +290,9 @@ bool RGBWWLed::show() {
 			// Interval hasn't passed yet
 			return true;
 		}
-
 		last_active = now;
 	#endif // ARDUINO
+
 	// Interval has passed
 	// check if we need to animate or there is any new animation
 	if (!_isAnimationActive) {
@@ -324,9 +324,7 @@ void RGBWWLed::skipAnimation(){
 }
 
 void RGBWWLed::clearAnimationQueue() {
-	if (_isAnimationActive) {
-		_clearAnimationQueue = true;
-	}
+	_clearAnimationQueue = true;
 }
 
 void RGBWWLed::setAnimationCallback( void (*func)(RGBWWLed* led) ) {
@@ -354,48 +352,50 @@ void RGBWWLed::setHSV(HSVK& color, int time, bool q) {
 
 
 void RGBWWLed::setHSV(HSVK& color, int time, int direction) {
-	// get current value and then move forward
 	setHSV( color, time, direction, false);
 }
 
-void RGBWWLed::setHSV(HSVK& color, int time, int direction, bool q) {
-	if (time == 0 || time < RGBWW_MINTIMEDIFF) {
-		// no animation - setting color directly
-		if (!q) {
-			clearAnimationQ();
-			cleanupCurrentAnimation();
-		}
-		_animationQ->push(new HSVSetOutput(color, this));
-
-	} else {
-		if (!q) {
-			clearAnimationQ();
-			cleanupCurrentAnimation();
-		}
-		_animationQ->push(new HSVTransition(color, time, direction, this));
-	}
-}
-
-void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction, bool q ) {
-	// only change color if it is different
+void RGBWWLed::setHSV(HSVK& color, int time, int direction /* = 1 */, bool q /* = false */) {
+	HSVK colorFrom = getCurrentColor();
 	if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  || colorFrom.k != color.k  ) {
-
+		//only set color if it differs from current color
 		if (time == 0 || time < RGBWW_MINTIMEDIFF) {
 			// no animation - setting color directly
+			// TODO: only animate if color is different from current color
 			if (!q) {
-				clearAnimationQ();
+				cleanupAnimationQ();
 				cleanupCurrentAnimation();
 			}
 			_animationQ->push(new HSVSetOutput(color, this));
 
 		} else {
 			if (!q) {
-				clearAnimationQ();
+				cleanupAnimationQ();
 				cleanupCurrentAnimation();
 			}
-			_animationQ->push(new HSVTransition(colorFrom, color, time, direction, this));
-
+			_animationQ->push(new HSVTransition(color, time, direction, this));
 		}
+	}
+
+}
+
+void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction /* = 1 */, bool q /* = false */) {
+
+	if (time == 0 || time < RGBWW_MINTIMEDIFF) {
+		// no animation - setting color directly
+		if (!q) {
+			cleanupAnimationQ();
+			cleanupCurrentAnimation();
+		}
+		_animationQ->push(new HSVSetOutput(color, this));
+
+	} else {
+		if (!q) {
+			cleanupAnimationQ();
+			cleanupCurrentAnimation();
+		}
+		_animationQ->push(new HSVTransition(colorFrom, color, time, direction, this));
+
 	}
 }
 
@@ -407,11 +407,9 @@ void RGBWWLed::cleanupCurrentAnimation() {
 	}
 }
 
-void RGBWWLed::clearAnimationQ() {
-	while(!_animationQ->isEmpty()) {
-		RGBWWLedAnimation* animation = _animationQ->pop();
-		delete animation;
-	}
+void RGBWWLed::cleanupAnimationQ() {
+	_animationQ->clear();
+	_clearAnimationQueue = false;
 }
 
 bool RGBWWLed::isAnimationQFull() {
@@ -423,7 +421,7 @@ bool RGBWWLed::isAnimationActive() {
 }
 
 /**************************************************************
-                    COLORUTILS
+ *                     COLORUTILS
  **************************************************************/
 
  void RGBWWLed::whiteBalance(RGBWK& rgbw, int& ww, int& cw) {
@@ -516,10 +514,8 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 	//sat = hsv.s;
 
 	rgbw.k = hsv.k;
-	//debugRGBW("==  HSV2RGB  ==");
-	//debugRGBW("HUE %i", hue);
-	//debugRGBW("SAT %i", sat);
-	//debugRGBW("VAL %i", val);
+	debugRGBW("==  HSV2RGB  ======");
+
 	if(sat == 0) {
 		/* color is grayscale */
 		if (_colormode == RGB) {
@@ -553,11 +549,8 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 		 */
 		chroma = (sat * val)/RGBWW_PWMMAXVAL;
 		m = val - chroma;
-		//debugRGBW("CHR %i",chroma);
-		//debugRGBW("M   %i", m);
-		//debugRGBW("===============");
 		if ( hue < _HueWheelSector[0] || (hue > _HueWheelSector[5] && hue <= _HueWheelSector[6])) {
-			//debugRGBW("Sector 6");
+			debugRGBW("Sector 6");
 			if (hue < _HueWheelSector[0]) {
 				fract = RGBWW_PWMMAXVAL + hue ;
 			} else {
@@ -566,13 +559,11 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 			r = chroma;
 			g = 0;
-			//debugRGBW("%i", fract);
-			//debugRGBW("%i",_HueWheelSectorWidth[5]);
 			b = ( chroma * (RGBWW_PWMMAXVAL - (RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[5])) >> RGBWW_PWMDEPTH;
 
 		} else if (  hue <= _HueWheelSector[1]  || hue > _HueWheelSector[6]) {
 			// Sector 1
-			//debugRGBW("Sector 1");
+			debugRGBW("Sector 1");
 			if (hue > _HueWheelSector[6]) {
 				fract = hue - _HueWheelSector[6];
 			} else {
@@ -584,7 +575,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else if (hue <= _HueWheelSector[2]) {
 			// Sector 2
-			//debugRGBW("Sector 2");
+			debugRGBW("Sector 2");
 			fract = hue - _HueWheelSector[1];
 			r = (chroma * (RGBWW_PWMMAXVAL - (RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[1])) >> RGBWW_PWMDEPTH;
 			g = chroma;
@@ -592,7 +583,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else if (hue <= _HueWheelSector[3]) {
 			// Sector 3
-			//debugRGBW("Sector 3");
+			debugRGBW("Sector 3");
 			fract = hue - _HueWheelSector[2];
 			r = 0;
 			g = chroma;
@@ -600,7 +591,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else if (hue <= _HueWheelSector[4]) {
 			// Sector 4
-			//debugRGBW("Sector 4");
+			debugRGBW("Sector 4");
 			fract = hue - _HueWheelSector[3];
 			r = 0;
 			g =(chroma * (RGBWW_PWMMAXVAL - (RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[3])) >> RGBWW_PWMDEPTH;
@@ -608,7 +599,7 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 
 		} else  {
 			// Sector 5
-			//debugRGBW("Sector 5");
+			debugRGBW("Sector 5");
 			fract = hue - _HueWheelSector[4];
 			r = (chroma * ((RGBWW_PWMMAXVAL * fract) / _HueWheelSectorWidth[4])) >> RGBWW_PWMDEPTH;
 			g = 0;
@@ -623,35 +614,35 @@ void RGBWWLed::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 			rgbw.b = b + m;
 			rgbw.w = 0; // otherwise might be undefined!
 
-			//debugRGBW("===============");
-			//debugRGBW("R i%", rgbw.r);
-			//debugRGBW("G i%", rgbw.g);
-			//debugRGBW("B i%", rgbw.b);
-			//debugRGBW("===============");
+			debugRGBW("----------------");
+			debugRGBW("R i%", rgbw.r);
+			debugRGBW("G i%", rgbw.g);
+			debugRGBW("B i%", rgbw.b);
+			debugRGBW("----------------");
 		} else {
 			rgbw.r = r;
 			rgbw.g = g;
 			rgbw.b = b;
 			rgbw.w = m;
 
-			//debugRGBW("===============");
-			//debugRGBW("R i%", rgbw.r);
-			//debugRGBW("G i%", rgbw.g);
-			//debugRGBW("B i%", rgbw.b);
-			//debugRGBW("W i%", rgbw.w);
-			//debugRGBW("===============");
+			debugRGBW("----------------");
+			debugRGBW("R i%", rgbw.r);
+			debugRGBW("G i%", rgbw.g);
+			debugRGBW("B i%", rgbw.b);
+			debugRGBW("W i%", rgbw.w);
+			debugRGBW("----------------");
 		}
 	}
-	//debugRGBW("==  //HSV2RGB  ==");
+	debugRGBW("==  //HSV2RGB  ==");
 }
 
 void  RGBWWLed::RGBtoHSV(const RGBWK& rgbw, HSVK& hsv) {
-	//debugRGBW("RGBtoHSV");
+	debugRGBW("RGBtoHSV");
 
 };
 
 /**************************************************************
-                HELPER FUNCTIONS
+ *                 HELPER FUNCTIONS
  **************************************************************/
 
 

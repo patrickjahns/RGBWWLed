@@ -27,7 +27,7 @@
  	SMING -> we can use hardware pwm from ESP
  ***************************************************************/
 
-PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq) {
+PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq /* = 200 */) {
 	
 	uint8_t pins[5] = { redPin, greenPin, bluePin, wwPin, cwPin};
 	uint32 io_info[5][3]; 
@@ -160,7 +160,7 @@ int PWMOutput::parseDuty(int duty) {
 /******************************************************
  * 	NOT ESP HW_PWM => we use Arduino ESP framework pwm
  ******************************************************/
-PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq) {
+PWMOutput::PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq /* = 200 */) {
 
 	_pins[RGBWW_COLORS::RED] = redPin;
 	_pins[RGBWW_COLORS::GREEN] = greenPin;
@@ -239,7 +239,6 @@ void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldw
 	setWarmWhite(warmwhite);
 	setColdWhite(coldwhite);
 }
-
 /*
 int PWMOutput::parseDuty(int duty) {
 	return (duty*_maxduty)/RGBWW_PWMMAXVAL;

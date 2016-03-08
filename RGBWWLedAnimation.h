@@ -38,6 +38,7 @@ public:
 	bool                isEmpty();
 	bool                isFull();
 	bool                push(RGBWWLedAnimation* animation);
+	void				clear();
 	RGBWWLedAnimation*  peek();
 	RGBWWLedAnimation*  pop();
 

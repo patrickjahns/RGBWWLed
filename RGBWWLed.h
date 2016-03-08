@@ -43,6 +43,10 @@
 	#include "../../SmingCore/SmingCore.h"
 #endif
 
+#ifndef DEBUG_RGBWW
+	#define DEBUG_RGBWW false
+#endif
+
 #include "debugUtils.h"
 #include "RGBWWLedColor.h"
 #include "RGBWWLedAnimation.h"
@@ -95,7 +99,7 @@ public:
 	void    	setHSV(HSVK& color);
 	void    	setHSV(HSVK& color, int time, int direction);
 	void    	setHSV(HSVK& color, int time, bool q);
-	void    	setHSV(HSVK& color, int time, int direction, bool q);
+	void    	setHSV(HSVK& color, int time, int direction=1, bool q=false);
 	void    	setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
 	void		setAnimationCallback( void (*func)(RGBWWLed* led) );
 	bool		isAnimationActive();
@@ -107,6 +111,7 @@ public:
 
 
 	//colorutils
+	//TODO: move to own class
 	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
 	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
 	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE mode);
@@ -117,6 +122,7 @@ public:
 
 
 	//helpers
+	//TODO: move to own class/make static
 	int     	parseHue(float hue);
 	int     	parseSat(float sat);
 	int     	parseVal(float val);
@@ -148,9 +154,9 @@ private:
 
 	//helpers
 
-	void    createHueWheel();
+	void    createHueWheel(); //TODO: move to own class/make static
 	void    cleanupCurrentAnimation();
-	void    clearAnimationQ();
+	void    cleanupAnimationQ();
 
 };
 

@@ -1,6 +1,7 @@
 # TODOs
 - General
   - [ ] code cleanup and refactoring
+  - [ ] documentation
 
 
 - ColorUtils

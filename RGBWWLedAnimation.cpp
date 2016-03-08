@@ -49,21 +49,16 @@ bool HSVSetOutput::run(int step) {
  **************************************************************/
 
 HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& direction, RGBWWLed* led ) {
-
-	//debugRGBW("== HSVT Constructor =======");
 	rgbled = led;
 	_finalcolor = color;
 	_hasbasecolor = false;
 	_steps = time / RGBWW_MINTIMEDIFF;
 	_huedirection = direction;
 	_currentstep = 0;
-	//debugRGBW("== //HSVT Constructor =====");
 }
 
 
 HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int& tm, const int& direction, RGBWWLed* led ) {
-
-	//debugRGBW("== HSVT Constructor =======");
 	rgbled = led;
 	_finalcolor = color;
 	_basecolor = colorFrom;
@@ -71,19 +66,21 @@ HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int
 	_steps = tm / RGBWW_MINTIMEDIFF;
 	_huedirection = direction;
 	_currentstep = 0;
-	//debugRGBW("== //HSVT Constructor =====");
+
 }
 
 void HSVTransition::init() {
 	int l, r, d;
-	//debugRGBW("==   HSVT INIT   =====");
+	debugRGBW("==   HSVT INIT   =====");
 	if (!_hasbasecolor) {
 		_basecolor = rgbled->getCurrentColor();
 	}
 	_currentcolor = _basecolor;
+
 	// calculate hue direction
 	l = (_basecolor.h + RGBWW_PWMHUEWHEELMAX - _finalcolor.h) % RGBWW_PWMHUEWHEELMAX;
 	r = (_finalcolor.h + RGBWW_PWMHUEWHEELMAX - _basecolor.h) % RGBWW_PWMHUEWHEELMAX;
+
 	// decide on direction of turn depending on size
 	d = (l < r)? -1 : 1;
 
@@ -126,12 +123,12 @@ void HSVTransition::init() {
 	_kelvinerror = -1 * _steps;
 	_kelvincount = 0;
 
-	//debugRGBW("_steps %i", _steps);
-	//debugRGBW("dhue %i", _dhue);
-	//debugRGBW("dsat %i", _dsat);
-	//debugRGBW("dval %i", _dval);
-	//debugRGBW("_currentcolor.h  %i", _currentcolor.h);
-	//debugRGBW("== //HSVT INIT   =====");
+	debugRGBW("steps %i", _steps);
+	debugRGBW("dhue %i", _dhue);
+	debugRGBW("dsat %i", _dsat);
+	debugRGBW("dval %i", _dval);
+	debugRGBW("dkelvin %i", _dkelvin);
+	debugRGBW("== //HSVT INIT   =====");
 }
 
 bool HSVTransition::run() {
@@ -139,7 +136,7 @@ bool HSVTransition::run() {
 }
 
 bool HSVTransition::run (int st) {
-	//debugRGBW("== HSV RUN =====");
+	debugRGBW("== HSV RUN =====");
 	if (_currentstep == 0) {
 		init();
 	}
@@ -165,10 +162,11 @@ bool HSVTransition::run (int st) {
 
 
 
-	//debugRGBW("H", _currentcolor.h);
-	//debugRGBW("S", _currentcolor.s);
-	//debugRGBW("V", _currentcolor.v);
-	//debugRGBW("== //HSV RUN =====");
+	debugRGBW("H", _currentcolor.h);
+	debugRGBW("S", _currentcolor.s);
+	debugRGBW("V", _currentcolor.v);
+	debugRGBW("K", _currentcolor.k);
+	debugRGBW("== //HSV RUN =====");
 
 	rgbled->setOutput(_currentcolor);
 	return false;
@@ -200,14 +198,7 @@ RGBWWLedAnimationQ::RGBWWLedAnimationQ(int qsize) {
 }
 
 RGBWWLedAnimationQ::~RGBWWLedAnimationQ(){
-	//cleanup 
-	RGBWWLedAnimation* animation;
-	while(!isEmpty()) {
-		animation = pop();
-		if (animation != NULL) {
-			delete animation;
-		}
-	}
+	clear();
 	delete q;
 }
 
@@ -217,6 +208,15 @@ bool RGBWWLedAnimationQ::isEmpty() {
 
 bool RGBWWLedAnimationQ::isFull() {
 	return _count == _size;
+}
+
+void RGBWWLedAnimationQ::clear() {
+	while(!isEmpty()) {
+		RGBWWLedAnimation* animation = pop();
+		if (animation != NULL) {
+			delete animation;
+		}
+	}
 }
 
 bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
@@ -229,7 +229,7 @@ bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
 	return false;
 }
 /**
-    Returns animation object pointer but keeps it in Q
+ *     Returns animation object pointer but keeps it in Q
  */
 
 RGBWWLedAnimation* RGBWWLedAnimationQ::peek() {
@@ -239,8 +239,7 @@ RGBWWLedAnimation* RGBWWLedAnimationQ::peek() {
 	return NULL;
 }
 /**
-    Returns current Animation object pointer and removes it from queue
-
+ *     Returns current Animation object pointer and removes it from queue
  */
 RGBWWLedAnimation* RGBWWLedAnimationQ::pop() {
 	RGBWWLedAnimation* tmpptr;
@@ -253,3 +252,5 @@ RGBWWLedAnimation* RGBWWLedAnimationQ::pop() {
 	}
 	return NULL;
 }
+
+
