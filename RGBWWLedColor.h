@@ -219,7 +219,11 @@ public:
 	void    	RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
 
 
-	//helpers
+	/**
+	 * Helper function to keep HUE within boundaries [0, HUELWHEELMAX]
+	 *
+	 * @param hue
+	 */
 	static void circleHue(int& hue);
 
 

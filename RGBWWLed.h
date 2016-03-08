@@ -27,8 +27,8 @@
 
 #define RGBWW_VERSION "0.6"
 #define RGBWW_PWMDEPTH 10
-#define RGBWW_PWMWIDTH int(pow(2, RGBWW_PWMDEPTH))
-#define	RGBWW_PWMMAXVAL int(RGBWW_PWMWIDTH - 1)
+#define RGBWW_PWMWIDTH int(pow(2, RGBWW_PWMDEPTH)) //1024
+#define	RGBWW_PWMMAXVAL int(RGBWW_PWMWIDTH - 1) //1023
 #define	RGBWW_PWMHUEWHEELMAX int(RGBWW_PWMMAXVAL * 6)
 
 #define RGBWW_UPDATEFREQUENCY 50
@@ -65,15 +65,79 @@ public:
 	//init & settings
 	RGBWWLed();
 	virtual 		~RGBWWLed();
+
+	/**
+	 * Initialize the the LED Controller
+	 *
+	 * @param redPIN
+	 * @param greenPIN
+	 * @param bluePIN
+	 * @param wwPIN
+	 * @param cwPIN
+	 * @param pwmFrequency (default 200)
+	 */
 	void    		init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
 
 
 	//output related
+	/**
+	 * Main function for processing animations/color output
+	 * Use this in your loop()
+	 *
+	 *
+	 * @return BOOL
+	 * @retval TRUE 	not updating
+	 * @retval FALSE 	updates applied
+	 */
 	bool    	show();
+
+
+	/**
+	 * Refreshs the current output
+	 * Usefull when changing brightness, white or color correction
+	 *
+	 */
 	void		refresh();
-	void    	setOutput(HSVK color);
-	void    	setOutput(RGBWK color);
-	void    	setOutputRaw(int red, int green, int blue, int cwhite, int wwhite);
+
+
+	/**
+	 * Set Output to given HSVK color
+	 * Converts HSVK into seperate color channels (r,g,b,w)
+	 * and applies brightness and white correction
+	 *
+	 * @param HSVK&	outputcolor
+	 */
+	void    	setOutput(HSVK& color);
+
+
+	/**
+	 * Sets the output of the Controller to the given RGBWK
+	 * while applying brightness and white correction
+	 *
+	 * @param RGBWK&	outputcolor
+	 */
+	void    	setOutput(RGBWK& color);
+
+
+	/**
+	 * Directly set the PWM values without color correction or white balance
+	 * Assumes the values are in the range of [0, 1023] or äquivalent if you change
+	 * the value range
+	 *
+	 * @param int&	red
+	 * @param int&	green
+	 * @param int&	blue
+	 * @param int&	wwhite
+	 * @param int&	cwhite
+	 */
+	void    	setOutputRaw(int& red, int& green, int& blue, int& cwhite, int& wwhite);
+
+
+	/**
+	 * Returns the current color as HSVK
+	 *
+	 * @return HSVK
+	 */
 	HSVK    	getCurrentColor();
 
 	//animation related
@@ -82,12 +146,54 @@ public:
 	void    	setHSV(HSVK& color, int time, bool q);
 	void    	setHSV(HSVK& color, int time, int direction=1, bool q=false);
 	void    	setHSV(HSVK& colorFrom, HSVK& color, int time, int direction=1, bool q=false);
+
+
+	/**
+	 * Function to call after an animation has finished
+	 *
+	 * @param func
+	 */
 	void		setAnimationCallback( void (*func)(RGBWWLed* led) );
+
+
+	/**
+	 * Check if an animation is currently active
+	 * @return
+	 * @retval true if active
+	 */
 	bool		isAnimationActive();
+
+
+	/**
+	 * Check if the AnimationQ is full
+	 * @return
+	 */
 	bool    	isAnimationQFull();
+
+	/**
+	 * skip the current Animation
+	 */
 	void    	skipAnimation();
+
+
+	/**
+	 * Cancel all following Animations
+	 */
 	void    	clearAnimationQueue();
+
+
+	/**
+	 * Change the speed of the current running animation
+	 *
+	 * @param speed
+	 */
 	void		setAnimationSpeed(int speed);
+
+
+	/**
+	 * Change the brightness of the current animation
+	 * @param brightness
+	 */
 	void		setAnimationBrightness(int brightness);
 
 	//color configuration

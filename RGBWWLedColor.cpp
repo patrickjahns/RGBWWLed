@@ -517,8 +517,11 @@ void RGBWWColorUtils::createHueWheel() {
 	}
 }
 
-/*
- * Helper function to keep Hue between 0 - HueWheelMax
+
+/**
+ * Helper function to keep HUE within boundaries [0, HUELWHEELMAX]
+ *
+ * @param hue
  */
 void RGBWWColorUtils::circleHue(int& hue ) {
 	while (hue >= RGBWW_PWMHUEWHEELMAX) hue -= RGBWW_PWMHUEWHEELMAX;

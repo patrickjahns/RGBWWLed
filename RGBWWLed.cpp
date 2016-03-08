@@ -54,6 +54,16 @@ RGBWWLed::~RGBWWLed() {
 
 }
 
+/**
+ * Initialize the the LED Controller
+ *
+ * @param redPIN
+ * @param greenPIN
+ * @param bluePIN
+ * @param wwPIN
+ * @param cwPIN
+ * @param pwmFrequency (default 200)
+ */
 void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency /* =200 */) {
 
 	_pwm_output = new PWMOutput(redPIN, greenPIN, bluePIN, wwPIN, cwPIN, pwmFrequency);
@@ -66,46 +76,77 @@ void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN,
  *                     OUTPUT
  **************************************************************/
 
+/**
+ * Refreshs the current output
+ * Usefull when changing brightness, white or color correction
+ *
+ */
 void RGBWWLed::refresh() {
-	setOutput(getCurrentColor());
+	setOutput(_current_color);
 }
  
  
+/**
+ * Returns the current color as HSVK
+ *
+ * @return HSVK
+ */
 HSVK RGBWWLed::getCurrentColor() {
 	return _current_color;
 }
 
-void RGBWWLed::setOutput(HSVK color) {
+/**
+ * Set Output to given HSVK color
+ * Converts HSVK into seperate color channels (r,g,b,w)
+ * and applies brightness and white correction
+ *
+ * @param HSVK&	outputcolor
+ */
+void RGBWWLed::setOutput(HSVK& outputcolor) {
 	RGBWK rgbw;
-	_current_color = color;
-	colorutils->HSVtoRGB(color, rgbw);
+	_current_color = outputcolor;
+	colorutils->HSVtoRGB(outputcolor, rgbw);
 	setOutput(rgbw);
 
 }
 
-void RGBWWLed::setOutput(RGBWK c) {
-	int color[5];
+/**
+ * Sets the output of the Controller to the given RGBWK
+ * while applying brightness and white correction
+ *
+ * @param RGBWK&	outputcolor
+ */
+void RGBWWLed::setOutput(RGBWK& outputcolor) {
+	int colors[5];
 	int ww, cw;
-	colorutils->whiteBalance(c, ww, cw);
-	color[RGBWW_COLORS::RED] = c.r;
-	color[RGBWW_COLORS::GREEN] = c.g;
-	color[RGBWW_COLORS::BLUE] = c.b;
-	color[RGBWW_COLORS::WW] = ww;
-	color[RGBWW_COLORS::CW] = cw;
-	setOutputRaw(color[RGBWW_COLORS::RED],
-			color[RGBWW_COLORS::GREEN],
-			color[RGBWW_COLORS::BLUE],
-			color[RGBWW_COLORS::WW],
-			color[RGBWW_COLORS::CW]);
+	colorutils->whiteBalance(outputcolor, ww, cw);
+	colors[RGBWW_COLORS::RED] = outputcolor.r;
+	colors[RGBWW_COLORS::GREEN] = outputcolor.g;
+	colors[RGBWW_COLORS::BLUE] = outputcolor.b;
+	colors[RGBWW_COLORS::WW] = ww;
+	colors[RGBWW_COLORS::CW] = cw;
+	setOutputRaw(colors[RGBWW_COLORS::RED],
+			colors[RGBWW_COLORS::GREEN],
+			colors[RGBWW_COLORS::BLUE],
+			colors[RGBWW_COLORS::WW],
+			colors[RGBWW_COLORS::CW]);
 }
 
 
 
-/**
-    Directly set the PWM values without color correction or white balance
 
+/**
+ * Directly set the PWM values without color correction or white balance
+ * Assumes the values are in the range of [0, 1023] or äquivalent if you change
+ * the value range
+ *
+ * @param int&	red
+ * @param int&	green
+ * @param int&	blue
+ * @param int&	wwhite
+ * @param int&	cwhite
  */
-void RGBWWLed::setOutputRaw(int red, int green, int blue, int wwhite, int cwhite) {
+void RGBWWLed::setOutputRaw(int& red, int& green, int& blue, int& wwhite, int& cwhite) {
 	if(_pwm_output != NULL) {
 		_pwm_output->setOutput(red, green, blue, wwhite, cwhite);
 	}
@@ -118,7 +159,13 @@ void RGBWWLed::setOutputRaw(int red, int green, int blue, int wwhite, int cwhite
 
 
 /**
-    Main function responsible for handling animations
+ * Main function for processing animations/color output
+ * Use this in your loop()
+ *
+ *
+ * @return BOOL
+ * @retval TRUE 	not updating
+ * @retval FALSE 	updates applied
  */
 bool RGBWWLed::show() {
 
@@ -169,45 +216,104 @@ bool RGBWWLed::show() {
 
 }
 
+/**
+ * Check if the AnimationQ is full
+ * @return
+ */
+bool RGBWWLed::isAnimationQFull() {
+	return _animationQ->isFull();
+}
 
+/**
+ * Check if an animation is currently active
+ * @return
+ * @retval true if active
+ */
+bool RGBWWLed::isAnimationActive() {
+	return _isAnimationActive;
+}
+
+/**
+ * skip the current Animation
+ */
 void RGBWWLed::skipAnimation(){
 	if (_isAnimationActive) {
 		_cancelAnimation = true;
 	}
 }
 
+/**
+ * Cancel all following Animations
+ */
 void RGBWWLed::clearAnimationQueue() {
 	_clearAnimationQueue = true;
 }
 
+/**
+ * Function to call after an animation has finished
+ *
+ * @param func
+ */
 void RGBWWLed::setAnimationCallback( void (*func)(RGBWWLed* led) ) {
   _animationcallback = func;
 }
 
+/**
+ * Change the speed of the current running animation
+ *
+ * @param speed
+ */
 void RGBWWLed::setAnimationSpeed(int speed) {
 	if(_currentAnimation != NULL) {
 		_currentAnimation->setSpeed(speed);
 	}
 }
+
+/**
+ * Change the brightness of the current animation
+ * @param brightness
+ */
 void RGBWWLed::setAnimationBrightness(int brightness){
 	if(_currentAnimation != NULL) {
 			_currentAnimation->setBrightness(brightness);
 		}
 }
 
+/**
+ *
+ * @param color
+ */
 void RGBWWLed::setHSV(HSVK& color) {
 	setHSV( color, 0, 1, false);
 }
 
+/**
+ *
+ * @param color
+ * @param time
+ * @param q
+ */
 void RGBWWLed::setHSV(HSVK& color, int time, bool q) {
 	setHSV( color, time, 1, q);
 }
 
-
+/**
+ *
+ * @param color
+ * @param time
+ * @param direction
+ */
 void RGBWWLed::setHSV(HSVK& color, int time, int direction) {
 	setHSV( color, time, direction, false);
 }
 
+/**
+ *
+ * @param color
+ * @param time
+ * @param direction
+ * @param q
+ */
 void RGBWWLed::setHSV(HSVK& color, int time, int direction /* = 1 */, bool q /* = false */) {
 	HSVK colorFrom = getCurrentColor();
 	if (colorFrom.h != color.h || colorFrom.s != color.s || colorFrom.v != color.v  || colorFrom.k != color.k  ) {
@@ -232,6 +338,14 @@ void RGBWWLed::setHSV(HSVK& color, int time, int direction /* = 1 */, bool q /* 
 
 }
 
+/**
+ *
+ * @param colorFrom
+ * @param color
+ * @param time
+ * @param direction
+ * @param q
+ */
 void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction /* = 1 */, bool q /* = false */) {
 
 	if (time == 0 || time < RGBWW_MINTIMEDIFF) {
@@ -265,13 +379,7 @@ void RGBWWLed::cleanupAnimationQ() {
 	_clearAnimationQueue = false;
 }
 
-bool RGBWWLed::isAnimationQFull() {
-	return _animationQ->isFull();
-}
 
-bool RGBWWLed::isAnimationActive() {
-	return _isAnimationActive;
-}
 
 
 
