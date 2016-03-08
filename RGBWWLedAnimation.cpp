@@ -28,15 +28,28 @@
  *               HSVSetOutput
  **************************************************************/
 
+/**
+ *
+ * @param color
+ * @param led
+ */
 HSVSetOutput::HSVSetOutput(const HSVK& color, RGBWWLed* led){
 	outputcolor = color;
 	rgbled = led;
 }
-
+/**
+ *
+ * @return
+ */
 bool HSVSetOutput::run() {
 	return run(0);
 }
 
+/**
+ *
+ * @param step
+ * @return
+ */
 bool HSVSetOutput::run(int step) {
 	rgbled->setOutput(outputcolor);
 	return true;
@@ -48,8 +61,15 @@ bool HSVSetOutput::run(int step) {
  *               HSV Transition
  **************************************************************/
 
-HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& direction, RGBWWLed* led ) {
-	rgbled = led;
+/**
+ *
+ * @param color
+ * @param time
+ * @param direction
+ * @param led
+ */
+HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& direction, RGBWWLed* ctrl ) {
+	rgbled = ctrl;
 	_finalcolor = color;
 	_hasbasecolor = false;
 	_steps = time / RGBWW_MINTIMEDIFF;
@@ -57,9 +77,16 @@ HSVTransition::HSVTransition(const HSVK& color, const int& time, const int& dire
 	_currentstep = 0;
 }
 
-
-HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int& tm, const int& direction, RGBWWLed* led ) {
-	rgbled = led;
+/**
+ *
+ * @param colorFrom
+ * @param color
+ * @param tm
+ * @param direction
+ * @param led
+ */
+HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& color, const int& tm, const int& direction, RGBWWLed* ctrl ) {
+	rgbled = ctrl;
 	_finalcolor = color;
 	_basecolor = colorFrom;
 	_hasbasecolor = true;
@@ -131,9 +158,19 @@ void HSVTransition::init() {
 	debugRGBW("== //HSVT INIT   =====");
 }
 
+/**
+ *
+ * @return
+ */
 bool HSVTransition::run() {
 	return run(1);
 }
+
+/**
+ *
+ * @param st
+ * @return
+ */
 
 bool HSVTransition::run (int st) {
 	debugRGBW("== HSV RUN =====");
@@ -172,9 +209,23 @@ bool HSVTransition::run (int st) {
 	return false;
 }
 /**
-    Bresenham line algorithm modified for calculating dy with dx (=time)
+
  */
 
+/**
+ * Bresenham line algorithm modified for calculating dy with dx
+ * Information on Algorithm see:
+ * https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
+ *
+ * @param error
+ * @param ctr
+ * @param dx
+ * @param dy
+ * @param incr
+ * @param base
+ * @param current
+ * @return
+ */
 int HSVTransition::bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, int& base, int& current) {
 	error = error + 2 * dy;
 	if (error > 0) {
@@ -189,6 +240,11 @@ int HSVTransition::bresenham(int& error, int& ctr, int& dx, int& dy, int& incr, 
                 Animation Queue
  **************************************************************/
 
+/**
+ * A simple Queue for processing animations/colors as batch
+ *
+ * @param qsize elements the queue can hold
+ */
 RGBWWLedAnimationQ::RGBWWLedAnimationQ(int qsize) {
 	_size = qsize;
 	_count = 0;
@@ -202,23 +258,34 @@ RGBWWLedAnimationQ::~RGBWWLedAnimationQ(){
 	delete q;
 }
 
+/**
+ * Check if the queue is empty or not
+ *
+ * @return	bool
+ */
 bool RGBWWLedAnimationQ::isEmpty() {
 	return _count == 0;
 }
 
+/**
+ * Check if the queue is full
+ *
+ * @return	BOOL
+ */
 bool RGBWWLedAnimationQ::isFull() {
 	return _count == _size;
 }
 
-void RGBWWLedAnimationQ::clear() {
-	while(!isEmpty()) {
-		RGBWWLedAnimation* animation = pop();
-		if (animation != NULL) {
-			delete animation;
-		}
-	}
-}
 
+
+/**
+ * Add an animation to the queue
+ *
+ * @param RGBWWLedAnimation* 	animation	pointer to Animation object
+ * @return	bool
+ * @retval 	true 	successfully inserted object queue
+ * @retval	false	did not insert object into queue
+ */
 bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
 	if (!isFull()){
 		_count++;
@@ -228,18 +295,35 @@ bool RGBWWLedAnimationQ::push(RGBWWLedAnimation* animation) {
 	}
 	return false;
 }
-/**
- *     Returns animation object pointer but keeps it in Q
- */
 
+/**
+ * Empty Queue and delete all objects stored
+ */
+void RGBWWLedAnimationQ::clear() {
+	while(!isEmpty()) {
+		RGBWWLedAnimation* animation = pop();
+		if (animation != NULL) {
+			delete animation;
+		}
+	}
+}
+
+/**
+ * Returns first Animation object pointer but keeps it in the queue
+ *
+ * @return RGBWWLedAnimation*
+ */
 RGBWWLedAnimation* RGBWWLedAnimationQ::peek() {
 	if (!isEmpty()) {
         return q[_back];
 	}
 	return NULL;
 }
+
 /**
- *     Returns current Animation object pointer and removes it from queue
+ *	Returns first Animation object pointer and removes it from queue
+ *
+ * @return RGBWWLedAnimation*
  */
 RGBWWLedAnimation* RGBWWLedAnimationQ::pop() {
 	RGBWWLedAnimation* tmpptr;

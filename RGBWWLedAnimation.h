@@ -35,18 +35,54 @@ public:
 	RGBWWLedAnimationQ() {};
 	RGBWWLedAnimationQ(int qsize);
 	~RGBWWLedAnimationQ();
+
+	/**
+	 * Check if the queue is empty or not
+	 *
+	 * @return	bool
+	 */
 	bool                isEmpty();
+
+	/**
+	 * Check if the queue is full
+	 *
+	 * @return	BOOL
+	 */
 	bool                isFull();
+
+	/**
+	 * Add an animation to the queue
+	 *
+	 * @param RGBWWLedAnimation* 	animation	pointer to Animation object
+	 * @return	bool
+	 * @retval 	true 	successfully inserted object queue
+	 * @retval	false	did not insert object into queue
+	 */
 	bool                push(RGBWWLedAnimation* animation);
+
+	/**
+	 * Empty Queue and delete all objects stored
+	 */
 	void				clear();
+
+	/**
+	 * Returns first Animation object pointer but keeps it in the queue
+	 *
+	 * @return RGBWWLedAnimation*
+	 */
 	RGBWWLedAnimation*  peek();
+
+	/**
+	 *	Returns first Animation object pointer and removes it from queue
+	 *
+	 * @return RGBWWLedAnimation*
+	 */
 	RGBWWLedAnimation*  pop();
 
 
 private:
 	int _size, _count, _front, _back;
 	RGBWWLedAnimation** q;
-
 
 };
 
@@ -81,11 +117,13 @@ public:
 	HSVTransition() {};
 	HSVTransition(const HSVK& color, const int& tm, const int& direction, RGBWWLed* rgbled);
 	HSVTransition(const HSVK& colorFrom, const HSVK& color, const int& tm, const int& direction, RGBWWLed* rgbled);
-	void        init();
+
 	bool        run();
 	bool        run(int st);
 
 private:
+	void        init();
+
 	HSVK        _basecolor;
 	HSVK        _currentcolor;
 	HSVK        _finalcolor;

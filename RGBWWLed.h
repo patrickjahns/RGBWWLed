@@ -67,6 +67,8 @@ public:
 	virtual 		~RGBWWLed();
 	void    		init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN, int pwmFrequency=200);
 
+	//color configuration
+
 	//output related
 	bool    	show();
 	void		refresh();
@@ -102,6 +104,7 @@ private:
 	PWMOutput*				_pwm_output;
 	RGBWWColorUtils*		_color_utils;
 	void (*_animationcallback)(RGBWWLed* led) = NULL;
+
 	//helpers
 	void    cleanupCurrentAnimation();
 	void    cleanupAnimationQ();

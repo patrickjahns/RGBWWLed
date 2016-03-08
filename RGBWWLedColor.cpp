@@ -16,13 +16,17 @@
  * General Public License for more details at
  * https://www.gnu.org/copyleft/gpl.html
  *
- * @brief
+ * @brief	Some utils used for working with different colortables (i.e HSV, RGB..)
  * @section DESCRIPTION
  *
  *
  */
 #include "RGBWWLed.h"
 #include "RGBWWLedColor.h"
+
+/**
+ *
+ */
 RGBWWColorUtils::RGBWWColorUtils() {
 	_colormode = RGB;
 	_hsvmode = NORMAL;
@@ -34,41 +38,71 @@ RGBWWColorUtils::RGBWWColorUtils() {
 
  }
 
+
 /**
- *  Change Mode for color calculations
+ *
+ * @param mode
  */
 
-void RGBWWColorUtils::setColorMode(RGBWW_COLORMODE m) {
-	_colormode = m;
+void RGBWWColorUtils::setColorMode(RGBWW_COLORMODE mode) {
+	_colormode = mode;
 }
 
+/**
+ *
+ * @return
+ */
 RGBWW_COLORMODE RGBWWColorUtils::getColorMode() {
 	return _colormode;
 }
+
 /**
  *
- *  Change HSV to RGBW calculation Model
  *
+ * @param mode
  */
-void RGBWWColorUtils::setHSVmode(RGBWW_HSVMODE m) {
-	_hsvmode = m;
+void RGBWWColorUtils::setHSVmode(RGBWW_HSVMODE mode) {
+	_hsvmode = mode;
 }
 
+/**
+ *
+ * @return
+ */
 RGBWW_HSVMODE RGBWWColorUtils::getHSVmode() {
 	return _hsvmode;
 }
 
+/**
+ *
+ * @param WarmWhite
+ * @param ColdWhite
+ */
+void RGBWWColorUtils::setWhiteTemperature(int WarmWhite, int ColdWhite) {
+	_WarmWhiteKelvin = WarmWhite;
+	_ColdWhiteKelvin = ColdWhite;
+}
 
 /**
- *     Correct the Maximum brightness output channels
- *     Assumes that r,g,b,cw and ww are contained in the
- *     set [0 , 100]
  *
- *    @param int	r	red channel
- *    @param int 	g	green channel
- *    @param int	b	blue channel
- *    @param int 	cw 	cold white channel
- *    @param int 	ww 	warm white channel (
+ * @param WarmWhite
+ * @param ColdWhite
+ */
+void RGBWWColorUtils::getWhiteTemperature(int& WarmWhite, int& ColdWhite) {
+	WarmWhite = _WarmWhiteKelvin;
+	ColdWhite = _ColdWhiteKelvin;
+}
+
+/**
+ * Set the maximum brightness if output for the channels
+ * Assumes that r,g,b,cw and ww are contained in the
+ * set [0 , 100]
+ *
+ * @param int	r	red channel
+ * @param int 	g	green channel
+ * @param int	b	blue channel
+ * @param int 	cw 	cold white channel
+ * @param int 	ww 	warm white channel (
  *
  */
 void RGBWWColorUtils::setBrightnessCorrection(int r, int g, int b, int ww, int cw) {
@@ -80,7 +114,15 @@ void RGBWWColorUtils::setBrightnessCorrection(int r, int g, int b, int ww, int c
 
 };
 
-
+/**
+ * Copies the current value of the brightness factor into the specified variables
+ *
+ * @param int&	r
+ * @param int&	g
+ * @param int&	b
+ * @param int&	ww
+ * @param int&	cw
+ */
 void RGBWWColorUtils::getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw) {
 	r = _BrightnessFactor[RGBWW_COLORS::RED]/RGBWW_PWMWIDTH;
 	g = _BrightnessFactor[RGBWW_COLORS::GREEN]/RGBWW_PWMWIDTH;
@@ -90,6 +132,12 @@ void RGBWWColorUtils::getBrightnessCorrection(int& r, int& g, int& b, int& ww, i
 }
 
 
+/**
+ * Corrects the values in the parsed array according to the set
+ * color correction
+ *
+ * @param int[] color
+ */
 void RGBWWColorUtils::correctBrightness(int color[]) {
 	color[RGBWW_COLORS::RED] = (color[RGBWW_COLORS::RED] * _BrightnessFactor[RGBWW_COLORS::RED]) >> RGBWW_PWMDEPTH;
 	color[RGBWW_COLORS::GREEN] = (color[RGBWW_COLORS::GREEN] * _BrightnessFactor[RGBWW_COLORS::GREEN]) >> RGBWW_PWMDEPTH;
@@ -99,15 +147,16 @@ void RGBWWColorUtils::correctBrightness(int color[]) {
 }
 
 /**
- *    Correct HSV
+ * Correction for HSVtoRGB Normal Mode. Moves the boundaries
+ * of each color further left/right. Assumes all variables are
+ * contained in [-30.0, 30.0]
  *
- *    @param red
- *    @param yellow
- *    @param green
- *    @param cyan
- *    @param blue
- *    @param magenta
- *
+ * @param float	red
+ * @param float	yellow
+ * @param float	green
+ * @param float	cyan
+ * @param float	blue
+ * @param float	magenta
  */
 
 void RGBWWColorUtils::setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta) {
@@ -185,6 +234,17 @@ void RGBWWColorUtils::setHSVcorrection(float red, float yellow, float green, flo
 	*/
 }
 
+/**
+ * Copies the current values used for HSV correction into the
+ * provided params
+ *
+ * @param float&	red
+ * @param float&	yellow
+ * @param float&	green
+ * @param float&	cyan
+ * @param float&	blue
+ * @param float&	magenta
+ */
 void RGBWWColorUtils::getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta) {
 	red = -1 * (float(_HueWheelSector[6] - 6*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
 	yellow = -1 * (float(_HueWheelSector[1] - 1*RGBWW_PWMMAXVAL)/ float(RGBWW_PWMMAXVAL)) * 60.0;
@@ -195,10 +255,12 @@ void RGBWWColorUtils::getHSVcorrection(float& red, float& yellow, float& green, 
 
 }
 
-/**************************************************************
- *                     COLORUTILS
- **************************************************************/
-
+/**
+ *
+ * @param RGBWK&	rgbw
+ * @param int& 		ww
+ * @param int&		cw
+ */
  void RGBWWColorUtils::whiteBalance(RGBWK& rgbw, int& ww, int& cw) {
 	switch(_colormode) {
 	case RGBWWCW:
@@ -234,11 +296,21 @@ void RGBWWColorUtils::getHSVcorrection(float& red, float& yellow, float& green, 
 	}
  }
 
-
+/**
+ *
+ * @param HSVK 	hsv
+ * @param RGBWK	rgbw
+ */
 void RGBWWColorUtils::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw) {
 	HSVtoRGB(hsv, rgbw, _hsvmode);
 }
 
+/**
+ *
+ * @param HSVK 	hsv
+ * @param RGBWK	rgbw
+ * @param m
+ */
 void RGBWWColorUtils::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE m) {
 	switch(m) {
 	case SPEKTRUM: HSVtoRGBspektrum(hsv, rgbw); break;
@@ -249,34 +321,45 @@ void RGBWWColorUtils::HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE m) {
 }
 
 /**
-    Convert HSV values to RGB colorspace by keeping
-    the max total color output equal.
-    Information see:
-    https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
-
+ * Convert HSV values to RGB colorspace by keeping
+ * the max total color output equal.
+ * Information see:
+ * https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
+ *
+ * @param HSVK 	hsv
+ * @param RGBWK	rgbw
  */
-
 void RGBWWColorUtils::HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw) {
 	//TODO: implement linear spectrum
 	HSVtoRGBn(hsv, rgbw);
 }
 
 /**
-    Convert HSV values to RGB colorspace with rainbow color table
-    Information see:
-    https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
 
+
+ */
+
+/**
+ * Convert HSV values to RGB colorspace with rainbow color table
+ * Information see:
+ * https://github.com/FastLED/FastLED/wiki/FastLED-HSV-Colors
+ *
+ * @param HSVK 	hsv
+ * @param RGBWK	rgbw
  */
 void RGBWWColorUtils::HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw) {
 	//TODO: implement rainbow spectrum
 	HSVtoRGBn(hsv, rgbw);
 }
 
-/**
-    Convert HSV values to RGB colorspace standard algorithm
-    Mor Information on the "standard" conversion:
-    https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
 
+/**
+ * Convert HSV values to RGB colorspace using the algorithm
+ * from https://en.wikipedia.org/wiki/HSL_and_HSV#From_HSV
+ *
+ *
+ * @param HSVK 	hsv
+ * @param RGBWK	rgbw
  */
 void RGBWWColorUtils::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 	int val, hue, sat, r, g, b, fract, chroma, m;
@@ -411,18 +494,20 @@ void RGBWWColorUtils::HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw) {
 	debugRGBW("==  //HSV2RGB  ==");
 }
 
+/**
+ *
+ *
+ * @param rgbw
+ * @param hsv
+ */
 void  RGBWWColorUtils::RGBtoHSV(const RGBWK& rgbw, HSVK& hsv) {
 	debugRGBW("RGBtoHSV");
 
 };
 
-/**************************************************************
- *                 HELPER FUNCTIONS
- **************************************************************/
-
 
 /*
-Helper function to create the 6 sectors for the HUE wheel
+ * Helper function to create the 6 sectors for the HUE wheel
  */
 void RGBWWColorUtils::createHueWheel() {
 	_HueWheelSector[0] = 0;
@@ -433,7 +518,7 @@ void RGBWWColorUtils::createHueWheel() {
 }
 
 /*
-Helper function to keep Hue between 0 - HueWheelMax
+ * Helper function to keep Hue between 0 - HueWheelMax
  */
 void RGBWWColorUtils::circleHue(int& hue ) {
 	while (hue >= RGBWW_PWMHUEWHEELMAX) hue -= RGBWW_PWMHUEWHEELMAX;
@@ -442,8 +527,8 @@ void RGBWWColorUtils::circleHue(int& hue ) {
 }
 
 /*
-Helper functions to parse hue,sat,val,colorcorrection
-Converts to the according pwm size (8bit/10bit)
+ * Helper functions to parse hue,sat,val,colorcorrection
+ * Converts to the according pwm size (8bit/10bit)
  */
 int RGBWWColorUtils::parseColorCorrection(float val) {
 	if (val >= 30.0) val = 30.0;

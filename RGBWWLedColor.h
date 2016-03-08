@@ -144,27 +144,83 @@ public:
 	RGBWW_COLORMODE getColorMode();
 	void    		setHSVmode(RGBWW_HSVMODE mode);
 	RGBWW_HSVMODE	getHSVmode();
-	void 			setWhiteTemperature(int WarmWhite, int ColdWhite);
-	void			getWhiteTemperature(int& WarmWhite, int& ColdWhite);
+War
+
+
+	/**
+	 * Correction for HSVtoRGB Normal Mode. Moves the boundaries
+	 * of each color further left/right. Assumes all variables are
+	 * contained in [-30.0, 30.0]
+	 *
+	 * @param float	red
+	 * @param float	yellow
+	 * @param float	green
+	 * @param float	cyan
+	 * @param float	blue
+	 * @param float	magenta
+	 */
 	void    		setHSVcorrection(float red, float yellow, float green, float cyan, float blue, float magenta);
+
+	/**
+	 * Copies the current values used for HSV correction into the
+	 * provided params
+	 *
+	 * @param float&	red
+	 * @param float&	yellow
+	 * @param float&	green
+	 * @param float&	cyan
+	 * @param float&	blue
+	 * @param float&	magenta
+	 */
 	void    		getHSVcorrection(float& red, float& yellow, float& green, float& cyan, float& blue, float& magenta);
+
+	/**
+	 * Set the maximum brightness if output for the channels
+	 * Assumes that r,g,b,cw and ww are contained in the
+	 * set [0 , 100]
+	 *
+	 * @param int	r	red channel
+	 * @param int 	g	green channel
+	 * @param int	b	blue channel
+	 * @param int 	cw 	cold white channel
+	 * @param int 	ww 	warm white channel (
+	 *
+	 */
 	void    		setBrightnessCorrection(int r, int g, int b, int ww, int cw);
+
+	/**
+	 * Copies the current value of the brightness factor into the specified variables
+	 *
+	 * @param int&	r
+	 * @param int&	g
+	 * @param int&	b
+	 * @param int&	ww
+	 * @param int&	cw
+	 */
 	void    		getBrightnessCorrection(int& r, int& g, int& b, int& ww, int& cw);
 
-	//colorutils
+
 	void		whiteBalance(RGBWK& rgbw, int& ww, int& cw);
+
+	/**
+	 * Corrects the values in the parsed array according to the set
+	 * color correction
+	 *
+	 * @param int[] color
+	 */
 	void		correctBrightness(int color[]);
 	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw);
 	void    	HSVtoRGB(const HSVK& hsv, RGBWK& rgbw, RGBWW_HSVMODE mode);
 	void    	HSVtoRGBn(const HSVK& hsv, RGBWK& rgbw);
 	void    	HSVtoRGBspektrum(const HSVK& hsv, RGBWK& rgbw);
 	void    	HSVtoRGBrainbow(const HSVK& hsv, RGBWK& rgbw);
+
+
 	void    	RGBtoHSV(const RGBWK& rgbw, HSVK& hsv);
 
 
-	//helpers
 	static void circleHue(int& hue);
-	static int 	parseColorCorrection(float val);
+
 
 private:
 	int         _BrightnessFactor[RGBWW_COLORS::NUM_COLORS];
@@ -176,7 +232,7 @@ private:
 	RGBWW_COLORMODE       _colormode;
 	RGBWW_HSVMODE         _hsvmode;
 
-
+	static int 	parseColorCorrection(float val);
 	void    	createHueWheel();
 
 };
