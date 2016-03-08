@@ -23,7 +23,7 @@
 #define DEBUGUTILS_H
 
     #ifdef DEBUG_RGBWW
-		#if DEBUG_RGBWW
+		#if DEBUG_RGBWW == TRUE
 			#ifdef ARDUINO
 				#define debugRGBW(fmt, ...) Serial.printf(fmt"\r\n", ##__VA_ARGS__)
 			#else
