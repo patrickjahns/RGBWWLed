@@ -49,7 +49,7 @@
 #define	RGBWW_WARMWHITEKELVIN 2700
 #define RGBWW_COLDWHITEKELVIN 6000
 
-#include <ARDUINO.h>
+#include <Arduino.h>
 #ifdef SMING_VERSION
 	#define RGBWW_USE_ESP_HWPWM
 	#include "../../SmingCore/SmingCore.h"
