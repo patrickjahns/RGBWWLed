@@ -26,3 +26,15 @@
 *.exe
 *.out
 *.app
+
+# codeblocks files
+bin/
+obj/
+codeblocks/
+*.cbp
+*.depend
+*.layout
+
+# eclipse project files
+.cproject
+.project
