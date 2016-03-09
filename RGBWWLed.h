@@ -37,7 +37,7 @@
 #define RGBWWLed_h
 
 
-#define RGBWW_VERSION "0.7"
+#define RGBWW_VERSION "0.7.0"
 #define RGBWW_PWMDEPTH 10
 #define RGBWW_PWMWIDTH int(pow(2, RGBWW_PWMDEPTH))
 #define	RGBWW_PWMMAXVAL int(RGBWW_PWMWIDTH - 1)
