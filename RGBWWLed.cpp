@@ -21,9 +21,11 @@ RGBWWLed::RGBWWLed() {
 	_cancelAnimation = false;
 	_clearAnimationQueue = false;
 	_current_color = HSVK(0, 0, 0);
+	_current_output = ChannelOutput(0, 0, 0, 0, 0);
 	_currentAnimation = NULL;
 	_animationQ = new RGBWWLedAnimationQ(RGBWW_ANIMATIONQSIZE);
 	_pwm_output = NULL;
+
 	last_active = 0;
 
 }
@@ -54,41 +56,43 @@ void RGBWWLed::init(int redPIN, int greenPIN, int bluePIN, int wwPIN, int cwPIN,
 void RGBWWLed::refresh() {
 	setOutput(_current_color);
 }
- 
- 
+
+ChannelOutput RGBWWLed::getCurrentOutput() {
+	return _current_output;
+}
+
+
 HSVK RGBWWLed::getCurrentColor() {
 	return _current_color;
 }
 
 
 void RGBWWLed::setOutput(HSVK& outputcolor) {
-	RGBWK rgbw;
+	RGBWK rgbwk;
 	_current_color = outputcolor;
-	colorutils.HSVtoRGB(outputcolor, rgbw);
-	setOutput(rgbw);
+	colorutils.HSVtoRGB(outputcolor, rgbwk);
+	setOutput(rgbwk);
 
 }
 
 
 void RGBWWLed::setOutput(RGBWK& outputcolor) {
-	int colors[5];
-	int ww, cw;
-	colorutils.whiteBalance(outputcolor, ww, cw);
-	colors[RGBWW_COLORS::RED] = outputcolor.r;
-	colors[RGBWW_COLORS::GREEN] = outputcolor.g;
-	colors[RGBWW_COLORS::BLUE] = outputcolor.b;
-	colors[RGBWW_COLORS::WW] = ww;
-	colors[RGBWW_COLORS::CW] = cw;
-	setOutputRaw(colors[RGBWW_COLORS::RED],
-			colors[RGBWW_COLORS::GREEN],
-			colors[RGBWW_COLORS::BLUE],
-			colors[RGBWW_COLORS::WW],
-			colors[RGBWW_COLORS::CW]);
+	ChannelOutput output;
+	colorutils.whiteBalance(outputcolor, output);
+	setOutput(output);
 }
 
+void RGBWWLed::setOutput(ChannelOutput& output) {
+	if(_pwm_output != NULL) {
+		colorutils.correctBrightness(output);
+		_current_output = output;
+		_pwm_output->setOutput(output.r, output.g, output.b, output.ww, output.cw);
+	}
+};
 
 void RGBWWLed::setOutputRaw(int& red, int& green, int& blue, int& wwhite, int& cwhite) {
 	if(_pwm_output != NULL) {
+		_current_output = ChannelOutput(red, green, blue, wwhite, cwhite);
 		_pwm_output->setOutput(red, green, blue, wwhite, cwhite);
 	}
 }
@@ -137,17 +141,21 @@ bool RGBWWLed::show() {
 	}
 
 	if (_currentAnimation->run()) {
-		cleanupCurrentAnimation();
 		//callback animation finished
 		if(_animationcallback != NULL ){
 			_animationcallback(this);
 		}
+		cleanupCurrentAnimation();
 	}
 
 	return false;
 
 }
 
+
+bool RGBWWLed::addToQueue(RGBWWLedAnimation* animation) {
+	return _animationQ->push(animation);
+}
 
 
 bool RGBWWLed::isAnimationQFull() {
@@ -252,6 +260,57 @@ void RGBWWLed::setHSV(HSVK& colorFrom, HSVK& color, int time, int direction /* =
 	}
 }
 
+
+void RGBWWLed::setRAW(ChannelOutput output) {
+	setRAW(output, 0, false);
+}
+
+
+void RGBWWLed::setRAW(ChannelOutput output, int time, bool queue /* = false */) {
+	if (time == 0 || time < RGBWW_MINTIMEDIFF) {
+		// no animation - setting color directly
+		if (!queue) {
+			//not using queue
+			cleanupAnimationQ();
+			cleanupCurrentAnimation();
+		}
+		_animationQ->push(new RAWSetOutput(output, this));
+	} else {
+		if (!queue) {
+			//not using queue
+			cleanupAnimationQ();
+			cleanupCurrentAnimation();
+		}
+		_animationQ->push(new RAWTransition(output, time, this));
+	}
+}
+
+
+void RGBWWLed::setRAW(ChannelOutput output_from, ChannelOutput output, int time, bool queue /* = false */) {
+	if (output_from.r != output.r || output_from.g != output.g || output_from.b != output.b  ||
+				output_from.ww != output.ww || output_from.cw != output.cw ) {
+		if (time == 0 || time < RGBWW_MINTIMEDIFF) {
+			// no animation - setting color directly
+			if (!queue) {
+				//not using queue
+				cleanupAnimationQ();
+				cleanupCurrentAnimation();
+			}
+			_animationQ->push(new RAWSetOutput(output, this));
+
+		} else {
+			if (!queue) {
+				//not using queue
+				cleanupAnimationQ();
+				cleanupCurrentAnimation();
+			}
+			_animationQ->push(new RAWTransition(output_from, output, time, this));
+
+		}
+	}
+}
+
+
 void RGBWWLed::cleanupCurrentAnimation() {
 	if (_currentAnimation != NULL) {
 		_isAnimationActive = false;
@@ -264,10 +323,3 @@ void RGBWWLed::cleanupAnimationQ() {
 	_animationQ->clear();
 	_clearAnimationQueue = false;
 }
-
-
-
-
-
-
-

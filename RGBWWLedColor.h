@@ -13,28 +13,30 @@ enum RGBWW_COLORMODE {
 	RGB = 0,
 	RGBWW = 1,
 	RGBCW = 2,
-	RGBWWCW = 3
+	RGBWWCW = 3,
+	NUM_COLORMODES = 4
 };
 
 enum RGBWW_HSVMODEL {
-	NORMAL = 0,
+	RAW = 0,
 	SPEKTRUM = 1,
-	RAINBOW = 2
+	RAINBOW = 2,
+	NUM_HSVMODELS = 3
 };
 
-enum RGBWW_COLORS {
+enum RGBWW_CHANNELS {
 	RED = 0,
 	GREEN = 1,
 	BLUE = 2,
 	WW = 3,
 	CW = 4,
-	NUM_COLORS = 5
+	NUM_CHANNELS = 5
 };
 
 //struct for RGBW + Kelvin
 struct RGBWK {
     int r, g, b, w, k;
-    RGBWK() {r = g = b = w = k = 0;}
+    RGBWK() {}
     //TODO: default value for White color?
     RGBWK(int red, int green, int blue, int white) : r(red), g(green), b(blue), w(white), k(0) {}
     RGBWK(int red, int green, int blue, int white, int kelvin) : r(red), g(green), b(blue), w(white), k(kelvin) {}
@@ -58,19 +60,68 @@ struct RGBWK {
     }
 };
 
+struct ChannelOutput {
+	union {
+		int r;
+		int red;
+	};
+	union {
+		int g;
+		int green;
+	};
+	union {
+		int b;
+		int blue;
+	};
+	union {
+		int ww;
+		int warmwhite;
+	};
+	union {
+		int cw;
+		int coldwhite;
+	};
 
+	ChannelOutput() {}
+
+	ChannelOutput(int red, int green, int blue, int warmwhite, int coldwhite) : r(red), g(green), b(blue), ww(warmwhite), cw(coldwhite) {}
+	ChannelOutput(const ChannelOutput& output)
+    {
+		r = output.r;
+		g = output.g;
+        b = output.b;
+        ww = output.ww;
+        cw = output.cw;
+    }
+
+	ChannelOutput& operator= (const ChannelOutput& output)
+    {
+        r = output.r;
+        g = output.g;
+        b = output.b;
+        ww = output.ww;
+        cw = output.cw;
+        return *this;
+    }
+};
 
 // struct for HSV + Kelvin
 
 struct HSVK {
+	float _h, _s, _v;
     int h, s, v, k;
-    HSVK() { h = s = v = k = 0;}
+
+
+    HSVK() {}
     //TODO: default value for White color?
     HSVK(int hue, int sat, int val) : h(hue), s(sat), v(val), k(0) {}
     HSVK(int hue, int sat, int val, int kelvin) : h(hue), s(sat), v(val), k(kelvin) {}
 
     //construct from float values
     HSVK( float hue, float sat, float val) {
+    	_h = hue;
+		_s = sat;
+		_v = val;
         h = (constrain(hue, 0.0, 360.0) / 360) * RGBWW_PWMHUEWHEELMAX;
         s = (constrain(sat, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
         v = (constrain(val, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
@@ -79,6 +130,9 @@ struct HSVK {
     }
 
     HSVK( float hue, float sat, float val, int kelvin) {
+    	_h = hue;
+    	_s = sat;
+    	_v = val;
         h = (constrain(hue, 0.0, 360.0) / 360) * RGBWW_PWMHUEWHEELMAX;
         s = (constrain(sat, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
         v = (constrain(val, 0.0, 100.0) / 100) * RGBWW_PWMMAXVAL;
@@ -88,16 +142,22 @@ struct HSVK {
     HSVK(const HSVK& hsvk)
     {
         h = hsvk.h;
+        _h = hsvk._h;
         s = hsvk.s;
+        _s = hsvk.s;
         v = hsvk.v;
+        _v = hsvk._v;
         k = hsvk.k;
     }
 
     HSVK& operator= (const HSVK& hsvk)
     {
         h = hsvk.h;
+        _h = hsvk._h;
         s = hsvk.s;
+        _s = hsvk.s;
         v = hsvk.v;
+        _v = hsvk._v;
         k = hsvk.k;
         return *this;
     }
@@ -107,6 +167,7 @@ struct HSVK {
 		sat = (float(s) / float(RGBWW_PWMMAXVAL)) * 100.0;
 		val = (float(v) / float(RGBWW_PWMMAXVAL)) * 100.0;
     }
+
     void asRadian(float& hue, float& sat, float& val, int& kelvin) {
     	hue = (float(h) / float(RGBWW_PWMHUEWHEELMAX)) * 360.0;
 		sat = (float(s) / float(RGBWW_PWMMAXVAL)) * 100.0;
@@ -251,7 +312,7 @@ public:
 	 * @param int& 		ww
 	 * @param int&		cw
 	 */
-	void whiteBalance(RGBWK& rgbw, int& ww, int& cw);
+	void whiteBalance(RGBWK& rgbw, ChannelOutput& output);
 
 
 	/**
@@ -260,7 +321,7 @@ public:
 	 *
 	 * @param int[] color
 	 */
-	void correctBrightness(int color[]);
+	void correctBrightness(ChannelOutput& output);
 
 
 	/**
@@ -291,7 +352,7 @@ public:
 	 * @param hsvk		HSVK struct with values
 	 * @param rgbwk		RGBWK struct to hold result
 	 */
-	void HSVtoRGBn(const HSVK& hsvk, RGBWK& rgbwk);
+	void HSVtoRGBraw(const HSVK& hsvk, RGBWK& rgbwk);
 
 
 	/**
@@ -333,7 +394,7 @@ public:
 
 
 private:
-	int         _BrightnessFactor[RGBWW_COLORS::NUM_COLORS];
+	int         _BrightnessFactor[RGBWW_CHANNELS::NUM_CHANNELS];
 	int         _HueWheelSector[7];
 	int         _HueWheelSectorWidth[6];
 	int			_WarmWhiteKelvin;
@@ -352,8 +413,8 @@ private:
 
 
 
-/*
-const uint8_t dim_curve[256] {
+#if RGBWW_PWMDEPTH == 8
+const uint8_t RGBWW_dim_curve[256] {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  1,  1,
     1,  1,  1,  1,  1,  1,  1,  1,  1,  2,  2,  2,  2,  2,  2,  2,
@@ -371,8 +432,8 @@ const uint8_t dim_curve[256] {
   177,180,182,184,186,189,191,193,196,198,200,203,205,208,210,213,
   215,218,220,223,225,228,231,233,236,239,241,244,247,249,252,255
 };
- */
-
+#endif
+#if RGBWW_PWMDEPTH == 10
 const uint16_t RGBWW_dim_curve[1024] = {
 		0, 0, 0, 0, 0, 1, 1, 1, 1, 1,
 		1, 1, 1, 1, 2, 2, 2, 2, 2, 2,
@@ -478,5 +539,6 @@ const uint16_t RGBWW_dim_curve[1024] = {
 		990, 992, 995, 997, 1000, 1002, 1005, 1008, 1010, 1013,
 		1015, 1018, 1020, 1023,
 };
+#endif
 
 #endif

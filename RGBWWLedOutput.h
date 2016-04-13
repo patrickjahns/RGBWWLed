@@ -48,10 +48,10 @@ public:
 private:
 	int		parseDuty(int duty);
 	int		_freq;
-	int		_duty[RGBWW_COLORS::NUM_COLORS];
+	int		_duty[RGBWW_CHANNELS::NUM_CHANNELS];
 	int		_maxduty;
 
-	
+
 };
 
 #else
@@ -63,7 +63,7 @@ private:
  */
 
 class PWMOutput
-	{
+{
 
 	public:
 		PWMOutput(uint8_t redPin, uint8_t greenPin, uint8_t bluePin, uint8_t wwPin, uint8_t cwPin, uint16_t freq = 200);
@@ -85,9 +85,11 @@ class PWMOutput
 
 	private:
 		int		_freq;
-		int		_pins[5];
-		int		_duty[5];
-		
+		int		_pins[RGBWW_CHANNELS::NUM_CHANNELS];
+		int		_duty[RGBWW_CHANNELS::NUM_CHANNELS];
+		int		_maxduty;
+		int		parseDuty(int duty);
+
 };
 #endif //RGBWW_USE_ESP_HWPWM
 

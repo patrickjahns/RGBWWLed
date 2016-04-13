@@ -1,7 +1,7 @@
 /**
  * @file
  * @author  Patrick Jahns http://github.com/patrickjahns
- * @version 0.7
+ * @version 0.7.3
  *
  * @section LICENSE
  *
@@ -37,13 +37,13 @@
 #define RGBWWLed_h
 
 
-#define RGBWW_VERSION "0.7.0"
+#define RGBWW_VERSION "0.7.3"
 #define RGBWW_PWMDEPTH 10
 #define RGBWW_PWMWIDTH int(pow(2, RGBWW_PWMDEPTH))
 #define	RGBWW_PWMMAXVAL int(RGBWW_PWMWIDTH - 1)
 #define	RGBWW_PWMHUEWHEELMAX int(RGBWW_PWMMAXVAL * 6)
 
-#define RGBWW_UPDATEFREQUENCY 50
+#define RGBWW_UPDATEFREQUENCY 100
 #define RGBWW_MINTIMEDIFF  int(1000 / RGBWW_UPDATEFREQUENCY)
 #define RGBWW_ANIMATIONQSIZE 50
 #define	RGBWW_WARMWHITEKELVIN 2700
@@ -53,10 +53,12 @@
 #ifdef SMING_VERSION
 	#define RGBWW_USE_ESP_HWPWM
 	#include "../../SmingCore/SmingCore.h"
+#else
+    #define RGBWW_ARDUINO_MAXDUTY 1023
 #endif
 
 #ifndef DEBUG_RGBWW
-	#define DEBUG_RGBWW TRUE
+	#define DEBUG_RGBWW 0
 #endif
 
 #include "debugUtils.h"
@@ -131,6 +133,12 @@ public:
 	 */
 	void setOutput(RGBWK& color);
 
+	/**
+	 * Sets the output of the controller to the specified
+	 * channel values (with internal brightness correction)
+	 */
+	void setOutput(ChannelOutput& output);
+
 
 	/**
 	 * Directly set the PWM values without color correction or white balance.
@@ -152,6 +160,12 @@ public:
 	 */
 	HSVK getCurrentColor();
 
+	/**
+	 * Returns the current values for each channel
+	 *
+	 * #return ChannelOutput current value of all channels
+	 */
+	ChannelOutput getCurrentOutput();
 
 	/**
 	 * Output specified HSV color
@@ -203,6 +217,14 @@ public:
 	 */
 	void setHSV(HSVK& colorFrom, HSVK& color, int time, int direction = 1, bool q = false);
 
+	// TODO: add documentation
+	void setRAW(ChannelOutput output);
+
+	//TODO: add documentation
+	void setRAW(ChannelOutput output, int time, bool queue = false );
+
+	//TODO: add documentation
+	void setRAW(ChannelOutput output_from, ChannelOutput output, int time, bool queue = false );
 
 	/**
 	 * Set a function as callback when an animation has finished.
@@ -261,14 +283,22 @@ public:
 	 */
 	void setAnimationBrightness(int brightness);
 
+	/**
+	 * Add animation to animation Qeueue
+	 *
+	 * @param animation Animation object
+	 * @return true on success / false on failure;
+	 */
+	bool addToQueue(RGBWWLedAnimation* animation);
+
 	//colorutils
 	RGBWWColorUtils colorutils;
 
 
 private:
 	unsigned long last_active;
+	ChannelOutput  _current_output;
 	HSVK 	_current_color;
-	RGBWK   _current_output;
 	bool    _cancelAnimation;
 	bool    _clearAnimationQueue;
 	bool    _isAnimationActive;

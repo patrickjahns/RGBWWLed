@@ -1,7 +1,7 @@
 # TODOs
 - General
-  - [ ] code cleanup and refactoring 50% done
-  - [ ] documentation 30% done
+  - [ ] code cleanup and refactoring 70% done
+  - [ ] documentation 70% done
 
 
 - ColorUtils
@@ -19,7 +19,9 @@
 - RGB controls
   - [ ] rgb to hsv conversion
   - [ ] rgb transition methods -> use hsv transition
-
+  
+- PWM
+  - [ ] change initilization of hardware pwm (currently tailored towards Sming framework)
 
 # DONE
 - General
