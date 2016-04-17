@@ -137,7 +137,7 @@ public:
 	 * @param ctrl	pointer to RGBWWLed controller object
 	 * @param time  minimal amount of time the color stays active
 	 */
-	HSVSetOutput(const HSVK& color, RGBWWLed* rgbled, int time = 0);
+	HSVSetOutput(const HSVCT& color, RGBWWLed* rgbled, int time = 0);
 
 	bool run();
 
@@ -146,7 +146,7 @@ private:
 	int count;
 	int steps;
 	RGBWWLed* rgbwwctrl;
-	HSVK outputcolor;
+	HSVCT outputcolor;
 };
 
 
@@ -171,7 +171,7 @@ public:
 	 * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
 	 * @param ctrl			main RGBWWLed object for calling setOutput
 	 */
-	HSVTransition(const HSVK& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl);
+	HSVTransition(const HSVCT& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl);
 
 	/**
 	 * Fade from one color (colorFrom) to another color (colorFinish)
@@ -182,7 +182,7 @@ public:
 	 * @param direction 	shortest (direction == 0)/longest (direction == 1) way for transition
 	 * @param ctrl			main RGBWWLed object for calling setOutput
 	 */
-	HSVTransition(const HSVK& colorFrom, const HSVK& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl);
+	HSVTransition(const HSVCT& colorFrom, const HSVCT& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl);
 
 	void reset();
 	bool run();
@@ -190,9 +190,9 @@ public:
 private:
 	bool init();
 
-	HSVK	_basecolor;
-	HSVK	_currentcolor;
-	HSVK	_finalcolor;
+	HSVCT	_basecolor;
+	HSVCT	_currentcolor;
+	HSVCT	_finalcolor;
 	bool	_hasbasecolor;
 	int	_currentstep;
 	int _steps;
@@ -200,7 +200,7 @@ private:
 	BresenhamValues hue;
 	BresenhamValues sat;
 	BresenhamValues val;
-	BresenhamValues kelvin;
+	BresenhamValues ct;
 
 
 	RGBWWLed*    rgbwwctrl;

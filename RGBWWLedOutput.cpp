@@ -47,9 +47,7 @@ int	PWMOutput::getFrequency() {
 	return _freq;
 }
 
-void PWMOutput::setRed(int value, bool update /* = true */) {
-
-	int duty = parseDuty(value);
+void PWMOutput::setRed(int duty, bool update /* = true */) {
 	if (duty != getRed()) {
         pwm_set_duty(duty, RGBWW_CHANNELS::RED);
         _duty[RGBWW_CHANNELS::RED] = pwm_get_duty(RGBWW_CHANNELS::RED);
@@ -64,8 +62,7 @@ int	PWMOutput::getRed(){
 	return pwm_get_duty(RGBWW_CHANNELS::RED);
 }
 
-void PWMOutput::setGreen(int value, bool update /* = true */) {
-	int duty = parseDuty(value);
+void PWMOutput::setGreen(int duty, bool update /* = true */) {
     if (duty != getGreen()) {
         pwm_set_duty(duty, RGBWW_CHANNELS::GREEN);
         _duty[RGBWW_CHANNELS::GREEN] = pwm_get_duty(RGBWW_CHANNELS::GREEN);
@@ -79,8 +76,7 @@ int	PWMOutput::getGreen() {
 	return pwm_get_duty(RGBWW_CHANNELS::GREEN);
 }
 
-void PWMOutput::setBlue(int value, bool update /* = true */) {
-	int duty = parseDuty(value);
+void PWMOutput::setBlue(int duty, bool update /* = true */) {
     if (duty != getBlue()) {
         pwm_set_duty(duty, RGBWW_CHANNELS::BLUE);
         _duty[RGBWW_CHANNELS::BLUE] = pwm_get_duty(RGBWW_CHANNELS::BLUE);
@@ -94,10 +90,7 @@ int PWMOutput::getBlue(){
 	return pwm_get_duty(RGBWW_CHANNELS::BLUE);
 }
 
-void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
-	debugRGBW("duty %i", value);
-	int duty = parseDuty(value);
-	debugRGBW("duty %i", duty);
+void PWMOutput::setWarmWhite(int duty, bool update /* = true */) {
 	if (duty != getWarmWhite()) {
         pwm_set_duty(duty, RGBWW_CHANNELS::WW);
         _duty[RGBWW_CHANNELS::WW] = pwm_get_duty(RGBWW_CHANNELS::WW);
@@ -111,8 +104,7 @@ int	PWMOutput::getWarmWhite() {
 	return pwm_get_duty(RGBWW_CHANNELS::WW);
 }
 
-void PWMOutput::setColdWhite(int value, bool update /* = true */) {
-	int duty = parseDuty(value);
+void PWMOutput::setColdWhite(int duty, bool update /* = true */) {
     if (duty != getColdWhite()) {
         pwm_set_duty(duty, RGBWW_CHANNELS::CW);
         _duty[RGBWW_CHANNELS::CW] = pwm_get_duty(RGBWW_CHANNELS::CW);
@@ -126,7 +118,7 @@ int	PWMOutput::getColdWhite(){
 }
 
 void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldwhite){
-
+	debugRGBW("R:%i | G:%i | B:%i | WW:%i | CW:%i", red, green, blue, warmwhite, coldwhite);
 	setRed(red, false);
 	setGreen(green, false);
 	setBlue(blue, false);
@@ -136,11 +128,6 @@ void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldw
 	//might cause delay/missed changes otherwise
 	pwm_start();
 
-}
-
-
-int PWMOutput::parseDuty(int duty) {
-	return (duty * _maxduty) / RGBWW_PWMWIDTH;
 }
 
 
@@ -233,6 +220,6 @@ void PWMOutput::setOutput(int red, int green, int blue, int warmwhite, int coldw
 }
 
 int PWMOutput::parseDuty(int duty) {
-	return (duty * _maxduty) / RGBWW_PWMWIDTH;
+	return (duty * _maxduty) / RGBWW_CALC_WIDTH;
 }
 #endif //RGBWW_USE_ESP_HWPWM

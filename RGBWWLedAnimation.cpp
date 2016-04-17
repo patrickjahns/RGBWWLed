@@ -15,7 +15,7 @@
  **************************************************************/
 
 
-HSVSetOutput::HSVSetOutput(const HSVK& color, RGBWWLed* ctrl, int time /* = 0 */){
+HSVSetOutput::HSVSetOutput(const HSVCT& color, RGBWWLed* ctrl, int time /* = 0 */){
 	outputcolor = color;
 	rgbwwctrl = ctrl;
 	steps = 0;
@@ -44,7 +44,7 @@ bool HSVSetOutput::run() {
  **************************************************************/
 
 
-HSVTransition::HSVTransition(const HSVK& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl ) {
+HSVTransition::HSVTransition(const HSVCT& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl ) {
 	rgbwwctrl = ctrl;
 	_finalcolor = colorEnd;
 	_hasbasecolor = false;
@@ -54,7 +54,7 @@ HSVTransition::HSVTransition(const HSVK& colorEnd, const int& time, const int& d
 }
 
 
-HSVTransition::HSVTransition(const HSVK& colorFrom, const HSVK& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl ) {
+HSVTransition::HSVTransition(const HSVCT& colorFrom, const HSVCT& colorEnd, const int& time, const int& direction, RGBWWLed* ctrl ) {
 	rgbwwctrl = ctrl;
 	_finalcolor = colorEnd;
 	_basecolor = colorFrom;
@@ -71,14 +71,14 @@ bool HSVTransition::init() {
 		_basecolor = rgbwwctrl->getCurrentColor();
 	}
 	//don`t animate if the color is already the same
-	if (_basecolor.h == _finalcolor.h && _basecolor.s == _finalcolor.s && _basecolor.v == _finalcolor.v && _basecolor.k == _finalcolor.k) {
+	if (_basecolor.h == _finalcolor.h && _basecolor.s == _finalcolor.s && _basecolor.v == _finalcolor.v && _basecolor.ct == _finalcolor.ct) {
 		return false;
 	}
 	_currentcolor = _basecolor;
 
 	// calculate hue direction
-	l = (_basecolor.h + RGBWW_PWMHUEWHEELMAX - _finalcolor.h) % RGBWW_PWMHUEWHEELMAX;
-	r = (_finalcolor.h + RGBWW_PWMHUEWHEELMAX - _basecolor.h) % RGBWW_PWMHUEWHEELMAX;
+	l = (_basecolor.h + RGBWW_CALC_HUEWHEELMAX - _finalcolor.h) % RGBWW_CALC_HUEWHEELMAX;
+	r = (_finalcolor.h + RGBWW_CALC_HUEWHEELMAX - _basecolor.h) % RGBWW_CALC_HUEWHEELMAX;
 
 	// decide on direction of turn depending on size
 	d = (l < r) ? -1 : 1;
@@ -115,12 +115,12 @@ bool HSVTransition::init() {
 	val.count = 0;
 
 	//KELVIN
-	kelvin.delta = abs(_basecolor.k - _finalcolor.k);
-	kelvin.step = 1;
-	kelvin.step = (kelvin.delta < _steps) ? (kelvin.step << 8 ): (kelvin.delta << 8)/_steps;
-	kelvin.step = (_basecolor.k > _finalcolor.k) ? kelvin.step*=-1 : kelvin.step;
-	kelvin.error = -1 * _steps;
-	kelvin.count = 0;
+	ct.delta = abs(_basecolor.ct - _finalcolor.ct);
+	ct.step = 1;
+	ct.step = (ct.delta < _steps) ? (ct.step << 8 ): (ct.delta << 8)/_steps;
+	ct.step = (_basecolor.ct > _finalcolor.ct) ? ct.step*=-1 : ct.step;
+	ct.error = -1 * _steps;
+	ct.count = 0;
 	return true;
 }
 
@@ -134,8 +134,8 @@ bool HSVTransition::run () {
 		}
 		_currentstep = 0;
 	}
-	debugRGBW("HSVTransition::run CURRENT  H %i | S %i | V %i | K %i", _currentcolor.h, _currentcolor.s, _currentcolor.v, _currentcolor.k);
-	debugRGBW("HSVTransition::run FINAL    H %i | S %i | V %i | K %i", _finalcolor.h, _finalcolor.s, _finalcolor.v, _finalcolor.k);
+	debugRGBW("HSVTransition::run CURRENT  H %i | S %i | V %i | K %i", _currentcolor.h, _currentcolor.s, _currentcolor.v, _currentcolor.ct);
+	debugRGBW("HSVTransition::run FINAL    H %i | S %i | V %i | K %i", _finalcolor.h, _finalcolor.s, _finalcolor.v, _finalcolor.ct);
 	_currentstep++;
 	if (_currentstep >= _steps) {
 		// ensure that the with the last step
@@ -149,7 +149,7 @@ bool HSVTransition::run () {
 	_currentcolor.h = bresenham(hue, _steps, _basecolor.h, _currentcolor.h);
 	_currentcolor.s = bresenham(sat, _steps, _basecolor.s, _currentcolor.s);
 	_currentcolor.v = bresenham(val, _steps,_basecolor.v, _currentcolor.v);
-	_currentcolor.k = bresenham(kelvin, _steps, _basecolor.k, _currentcolor.k);
+	_currentcolor.ct = bresenham(ct, _steps, _basecolor.ct, _currentcolor.ct);
 
 	//fix hue
 	RGBWWColorUtils::circleHue(_currentcolor.h);

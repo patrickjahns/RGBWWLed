@@ -35,33 +35,36 @@
 
 #ifndef RGBWWLed_h
 #define RGBWWLed_h
+#include <Arduino.h>
+#ifdef SMING_VERSION
+	#define RGBWW_USE_ESP_HWPWM
+	#include "../../SmingCore/SmingCore.h"
+	#define RGBWW_PWMRESOLUTION 65536
+	#define RGBWW_CALC_DEPTH 10
+#else
+	#define RGBWW_PWMRESOLUTION 1023
+	#define RGBWW_CALC_DEPTH 8
+#endif
+
+#define RGBWW_VERSION "0.8.0"
+#define RGBWW_CALC_WIDTH int(pow(2, RGBWW_CALC_DEPTH))
+#define	RGBWW_CALC_MAXVAL int(RGBWW_CALC_WIDTH - 1)
+#define	RGBWW_CALC_HUEWHEELMAX int(RGBWW_CALC_MAXVAL * 6)
 
 
-#define RGBWW_VERSION "0.7.3"
-#define RGBWW_PWMDEPTH 10
-#define RGBWW_PWMWIDTH int(pow(2, RGBWW_PWMDEPTH))
-#define	RGBWW_PWMMAXVAL int(RGBWW_PWMWIDTH - 1)
-#define	RGBWW_PWMHUEWHEELMAX int(RGBWW_PWMMAXVAL * 6)
-
-#define RGBWW_UPDATEFREQUENCY 100
+#define RGBWW_UPDATEFREQUENCY 50
 #define RGBWW_MINTIMEDIFF  int(1000 / RGBWW_UPDATEFREQUENCY)
 #define RGBWW_ANIMATIONQSIZE 50
 #define	RGBWW_WARMWHITEKELVIN 2700
 #define RGBWW_COLDWHITEKELVIN 6000
 
-#include <Arduino.h>
-#ifdef SMING_VERSION
-	#define RGBWW_USE_ESP_HWPWM
-	#include "../../SmingCore/SmingCore.h"
-#else
-    #define RGBWW_ARDUINO_MAXDUTY 1023
-#endif
 
 #ifndef DEBUG_RGBWW
 	#define DEBUG_RGBWW 0
 #endif
 
 #include "debugUtils.h"
+#include "RGBWWconst.h"
 #include "RGBWWLedColor.h"
 #include "RGBWWLedAnimation.h"
 #include "RGBWWLedOutput.h"
@@ -122,7 +125,7 @@ public:
 	 *
 	 * @param HSVK&	outputcolor
 	 */
-	void setOutput(HSVK& color);
+	void setOutput(HSVCT& color);
 
 
 	/**
@@ -131,7 +134,7 @@ public:
 	 *
 	 * @param RGBWK& outputcolor
 	 */
-	void setOutput(RGBWK& color);
+	void setOutput(RGBWCT& color);
 
 	/**
 	 * Sets the output of the controller to the specified
@@ -158,7 +161,7 @@ public:
 	 *
 	 * @return HSVK current color
 	 */
-	HSVK getCurrentColor();
+	HSVCT getCurrentColor();
 
 	/**
 	 * Returns the current values for each channel
@@ -167,12 +170,27 @@ public:
 	 */
 	ChannelOutput getCurrentOutput();
 
+
 	/**
-	 * Output specified HSV color
+	 * 	Output specified color
+	 *  (until a new color is set)
 	 *
-	 * @param color HSVK object with color values
+	 * @param color
+	 * @param queue
 	 */
-	void setHSV(HSVK& color);
+	void setHSV(HSVCT& color, bool queue = false);
+
+
+	/**
+	 * Output color for time x
+	 * if time x has passed it will continue with the next
+	 * color/transition in the animat queue
+	 *
+	 * @param color
+	 * @param time
+	 * @param queue
+	 */
+	void setHSV(HSVCT& color, int time, bool queue = false);
 
 
 	/**
@@ -182,7 +200,7 @@ public:
 	 * @param time		duration of transition in ms
 	 * @param direction direction of transition (0= long/ 1=short)
 	 */
-	void setHSV(HSVK& color, int time, int direction);
+	void fadeHSV(HSVCT& color, int time, int direction);
 
 
 	/**
@@ -192,7 +210,7 @@ public:
 	 * @param time		duration of transition in ms
 	 * @param queue		directly execute fade or queue it
 	 */
-	void setHSV(HSVK& color, int time, bool queue);
+	void fadeHSV(HSVCT& color, int time, bool queue);
 
 
 	/**
@@ -203,7 +221,7 @@ public:
 	 * @param direction direction of transition (0= long/ 1=short)
 	 * @param queue		directly execute fade or queue it
 	 */
-	void setHSV(HSVK& color, int time, int direction = 1, bool queue = false);
+	void fadeHSV(HSVCT& color, int time, int direction = 1, bool queue = false);
 
 
 	/**
@@ -215,16 +233,45 @@ public:
 	 * @param direction direction of transition (0= long/ 1=short)
 	 * @param queue		directly execute fade or queue it
 	 */
-	void setHSV(HSVK& colorFrom, HSVK& color, int time, int direction = 1, bool q = false);
-
-	// TODO: add documentation
-	void setRAW(ChannelOutput output);
+	void fadeHSV(HSVCT& colorFrom, HSVCT& color, int time, int direction = 1, bool q = false);
 
 	//TODO: add documentation
-	void setRAW(ChannelOutput output, int time, bool queue = false );
+	/**
+	 *
+	 * @param output
+	 */
+	void setRAW(ChannelOutput output, bool queue = false);
 
 	//TODO: add documentation
-	void setRAW(ChannelOutput output_from, ChannelOutput output, int time, bool queue = false );
+	/**
+	 *
+	 * @param output
+	 * @param time
+	 * @param queue
+	 */
+	void setRAW(ChannelOutput output, int time, bool queue = false);
+
+
+
+	//TODO: add documentation
+	/**
+	 *
+	 * @param output
+	 * @param time
+	 * @param queue
+	 */
+	void fadeRAW(ChannelOutput output, int time, bool queue = false );
+
+
+	//TODO: add documentation
+	/**
+	 *
+	 * @param output_from
+	 * @param output
+	 * @param time
+	 * @param queue
+	 */
+	void fadeRAW(ChannelOutput output_from, ChannelOutput output, int time, bool queue = false );
 
 	/**
 	 * Set a function as callback when an animation has finished.
@@ -298,7 +345,7 @@ public:
 private:
 	unsigned long last_active;
 	ChannelOutput  _current_output;
-	HSVK 	_current_color;
+	HSVCT 	_current_color;
 	bool    _cancelAnimation;
 	bool    _clearAnimationQueue;
 	bool    _isAnimationActive;
