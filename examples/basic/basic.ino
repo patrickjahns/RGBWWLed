@@ -11,7 +11,7 @@ RGBWWLed rgbwwctrl;
 
 void saveRGBWW(RGBWWLed* rgbwwctrl) {
 
-  HSVK c = rgbwwctrl->getCurrentColor();
+  HSVCT c = rgbwwctrl->getCurrentColor();
   Serial.println("Current color");
   Serial.print("H:");
   Serial.print(c.h);
@@ -19,8 +19,8 @@ void saveRGBWW(RGBWWLed* rgbwwctrl) {
   Serial.print(c.s);
   Serial.print("  V:");
   Serial.print(c.v);
-  Serial.print("  K:");
-  Serial.println(c.k);
+  Serial.print("  CT:");
+  Serial.println(c.ct);
   
 }
 
@@ -36,7 +36,7 @@ void setup() {
   rgbwwctrl.colorutils.setColorMode(RGBWW_COLORMODE::RGBWWCW);
     
   //show red as initial color
-  HSVK color = HSVK(0, 100, 100);
+  HSVCT color = HSVCT(0, 100, 100);
   rgbwwctrl.setHSV(color);
   
   

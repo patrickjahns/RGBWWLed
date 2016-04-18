@@ -49,7 +49,7 @@ void handleHSV() {
     if (server.hasArg("k")) {
       kelvin = server.arg("k").toInt();
     }
-    HSVK color = HSVK(hue, sat, val, kelvin);
+    HSVCT color = HSVCT(hue, sat, val, kelvin);
     rgbled.setHSV(color);
     server.send(200, "text/plain", "ok");
     
@@ -68,7 +68,7 @@ void handleHSVtransition() {
     hue = server.arg("h").toFloat();
     sat = server.arg("s").toFloat();
     val = server.arg("v").toFloat();
-    HSVK color(hue, sat, val);
+    HSVCT color(hue, sat, val);
     if (server.hasArg("l")) {
       shortway = false;
     }
