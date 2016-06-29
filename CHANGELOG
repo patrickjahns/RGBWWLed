@@ -1,0 +1,5 @@
+## Changelog
+
+0.8.1 (29.06.2016)
+  * fix HSVSetOutput / RAWSetOutput
+  * increase default queue size to 100 items
