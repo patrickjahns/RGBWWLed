@@ -29,12 +29,13 @@ bool HSVSetOutput::run() {
 	if (count == 0) {
 		rgbwwctrl->setOutput(outputcolor);
 	}
+	count += 1;
 	if (steps != 0) {
 		if (count < steps) {
 			return false;
 		}
 	}
-	count += 1;
+
 	return true;
 }
 
@@ -194,12 +195,12 @@ bool RAWSetOutput::run() {
 	if (count == 0) {
 		rgbwwctrl->setOutput(outputcolor);
 	}
+	count += 1;
 	if (steps != 0) {
 		if (count < steps) {
 			return false;
 		}
 	}
-	count += 1;
 	return true;
 }
 
