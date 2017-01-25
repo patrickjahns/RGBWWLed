@@ -89,11 +89,11 @@ void RGBWWLed::setOutput(ChannelOutput& output) {
 		colorutils.correctBrightness(output);
 		_current_output = output;
 		debugRGBW("R:%i | G:%i | B:%i | WW:%i | CW:%i", output.r, output.g, output.b, output.ww, output.cw);
-		_pwm_output->setOutput(RGBWW_dim_curve[output.r],
-							   RGBWW_dim_curve[output.g],
-							   RGBWW_dim_curve[output.b],
-							   RGBWW_dim_curve[output.ww],
-							   RGBWW_dim_curve[output.cw]);
+		_pwm_output->setOutput((output.r == -1)?-1:RGBWW_dim_curve[output.r],
+								(output.g == -1)?-1:RGBWW_dim_curve[output.g],
+								(output.b == -1)?-1:RGBWW_dim_curve[output.b],
+								(output.ww == -1)?-1:RGBWW_dim_curve[output.ww],
+								(output.cw == -1)?-1:RGBWW_dim_curve[output.cw]);
 	}
 };
 

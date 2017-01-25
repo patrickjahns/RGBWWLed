@@ -48,7 +48,7 @@ int	PWMOutput::getFrequency() {
 }
 
 void PWMOutput::setRed(int duty, bool update /* = true */) {
-	if (duty != getRed()) {
+	if (duty != getRed() && duty != -1) {
         pwm_set_duty(duty, RGBWW_CHANNELS::RED);
         _duty[RGBWW_CHANNELS::RED] = pwm_get_duty(RGBWW_CHANNELS::RED);
 
@@ -63,7 +63,7 @@ int	PWMOutput::getRed(){
 }
 
 void PWMOutput::setGreen(int duty, bool update /* = true */) {
-    if (duty != getGreen()) {
+    if (duty != getGreen() && duty != -1) {
         pwm_set_duty(duty, RGBWW_CHANNELS::GREEN);
         _duty[RGBWW_CHANNELS::GREEN] = pwm_get_duty(RGBWW_CHANNELS::GREEN);
 		if(update) {
@@ -77,7 +77,7 @@ int	PWMOutput::getGreen() {
 }
 
 void PWMOutput::setBlue(int duty, bool update /* = true */) {
-    if (duty != getBlue()) {
+    if (duty != getBlue() && duty != -1) {
         pwm_set_duty(duty, RGBWW_CHANNELS::BLUE);
         _duty[RGBWW_CHANNELS::BLUE] = pwm_get_duty(RGBWW_CHANNELS::BLUE);
 		if(update) {
@@ -91,7 +91,7 @@ int PWMOutput::getBlue(){
 }
 
 void PWMOutput::setWarmWhite(int duty, bool update /* = true */) {
-	if (duty != getWarmWhite()) {
+	if (duty != getWarmWhite() && duty != -1) {
         pwm_set_duty(duty, RGBWW_CHANNELS::WW);
         _duty[RGBWW_CHANNELS::WW] = pwm_get_duty(RGBWW_CHANNELS::WW);
 		if(update) {
@@ -105,7 +105,7 @@ int	PWMOutput::getWarmWhite() {
 }
 
 void PWMOutput::setColdWhite(int duty, bool update /* = true */) {
-    if (duty != getColdWhite()) {
+    if (duty != getColdWhite() && duty != -1) {
         pwm_set_duty(duty, RGBWW_CHANNELS::CW);
         _duty[RGBWW_CHANNELS::CW] = pwm_get_duty(RGBWW_CHANNELS::CW);
 		if(update) {
@@ -165,6 +165,7 @@ int	PWMOutput::getFrequency() {
 }
 
 void PWMOutput::setRed(int value, bool update /* = true */) {
+	if(value == -1)return;
 	_duty[RGBWW_CHANNELS::RED] = parseDuty(value);
 	analogWrite(_pins[RGBWW_CHANNELS::RED], value);
 }
@@ -175,6 +176,7 @@ int PWMOutput::getRed() {
 
 
 void PWMOutput::setGreen(int value, bool update /* = true */) {
+	if(value == -1)return;
 	_duty[RGBWW_CHANNELS::GREEN] = parseDuty(value);
 	analogWrite(_pins[RGBWW_CHANNELS::GREEN], value);
 }
@@ -184,6 +186,7 @@ int PWMOutput::getGreen() {
 }
 
 void PWMOutput::setBlue(int value, bool update /* = true */) {
+	if(value == -1)return;
 	_duty[RGBWW_CHANNELS::BLUE] = parseDuty(value);
 	analogWrite(_pins[RGBWW_CHANNELS::BLUE], value);
 }
@@ -194,6 +197,7 @@ int	PWMOutput::getBlue() {
 
 
 void PWMOutput::setWarmWhite(int value, bool update /* = true */) {
+	if(value == -1)return;
 	_duty[RGBWW_CHANNELS::WW] = parseDuty(value);
 	analogWrite(_pins[RGBWW_CHANNELS::WW], value);
 }
@@ -203,6 +207,7 @@ int PWMOutput::getWarmWhite() {
 }
 
 void PWMOutput::setColdWhite(int value, bool update /* = true */) {
+	if(value == -1)return;
 	_duty[RGBWW_CHANNELS::CW] = parseDuty(value);
 	analogWrite(_pins[RGBWW_CHANNELS::CW], value);
 }

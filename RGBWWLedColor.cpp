@@ -77,11 +77,11 @@ void RGBWWColorUtils::getBrightnessCorrection(int& r, int& g, int& b, int& ww, i
 
 
 void RGBWWColorUtils::correctBrightness(ChannelOutput& output) {
-	output.red = (output.red * _BrightnessFactor[RGBWW_CHANNELS::RED]) / RGBWW_CALC_MAXVAL;
-	output.green = (output.green * _BrightnessFactor[RGBWW_CHANNELS::GREEN]) / RGBWW_CALC_MAXVAL;
-	output.blue = (output.blue * _BrightnessFactor[RGBWW_CHANNELS::BLUE]) / RGBWW_CALC_MAXVAL;
-	output.warmwhite = (output.warmwhite * _BrightnessFactor[RGBWW_CHANNELS::WW]) / RGBWW_CALC_MAXVAL;
-	output.coldwhite = (output.coldwhite * _BrightnessFactor[RGBWW_CHANNELS::CW]) / RGBWW_CALC_MAXVAL;
+	if(output.red != -1) output.red = (output.red * _BrightnessFactor[RGBWW_CHANNELS::RED]) / RGBWW_CALC_MAXVAL;
+	if(output.green != -1) output.green = (output.green * _BrightnessFactor[RGBWW_CHANNELS::GREEN]) / RGBWW_CALC_MAXVAL;
+	if(output.blue != -1) output.blue = (output.blue * _BrightnessFactor[RGBWW_CHANNELS::BLUE]) / RGBWW_CALC_MAXVAL;
+	if(output.warmwhite != -1) output.warmwhite = (output.warmwhite * _BrightnessFactor[RGBWW_CHANNELS::WW]) / RGBWW_CALC_MAXVAL;
+	if(output.coldwhite != -1) output.coldwhite = (output.coldwhite * _BrightnessFactor[RGBWW_CHANNELS::CW]) / RGBWW_CALC_MAXVAL;
 }
 
 
@@ -167,14 +167,14 @@ void RGBWWColorUtils::getHSVcorrection(float& red, float& yellow, float& green, 
 	case RGBCW:
 		//TODO implement valid algorithm
 
-		output.warmwhite = 0;
+		output.warmwhite = -1;
 		output.coldwhite = rgbw.w;
 		break;
 
 	case RGBWW:
 		//TODO implement valid algorithm
 		output.warmwhite = rgbw.w;
-		output.coldwhite = 0;
+		output.coldwhite = -1;
 		break;
 
 	case RGB:
@@ -182,8 +182,8 @@ void RGBWWColorUtils::getHSVcorrection(float& red, float& yellow, float& green, 
 		output.r += rgbw.w;
 		output.g += rgbw.w;
 		output.b += rgbw.w;
-		output.coldwhite = 0;
-		output.warmwhite = 0;
+		output.coldwhite = -1;
+		output.warmwhite = -1;
 		break;
 	}
  }
