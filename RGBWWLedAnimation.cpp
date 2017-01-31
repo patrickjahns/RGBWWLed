@@ -29,12 +29,13 @@ bool HSVSetOutput::run() {
 	if (count == 0) {
 		rgbwwctrl->setOutput(outputcolor);
 	}
+	count += 1;
 	if (steps != 0) {
 		if (count < steps) {
 			return false;
 		}
 	}
-	count += 1;
+
 	return true;
 }
 
@@ -194,12 +195,12 @@ bool RAWSetOutput::run() {
 	if (count == 0) {
 		rgbwwctrl->setOutput(outputcolor);
 	}
+	count += 1;
 	if (steps != 0) {
 		if (count < steps) {
 			return false;
 		}
 	}
-	count += 1;
 	return true;
 }
 
@@ -231,7 +232,23 @@ RAWTransition::RAWTransition(const ChannelOutput& output_from, const ChannelOutp
 bool RAWTransition::init() {
 	if (!_hasbasecolor) {
 		_basecolor = rgbwwctrl->getCurrentOutput();
+	} else {
+		// There may be blanks in the basecolor, so fill them from current output.
+		ChannelOutput current = rgbwwctrl->getCurrentOutput();
+		if(_basecolor.r == -1)_basecolor.r = current.r;
+		if(_basecolor.g == -1)_basecolor.g = current.g;
+		if(_basecolor.b == -1)_basecolor.b = current.b;
+		if(_basecolor.ww == -1)_basecolor.ww = current.ww;
+		if(_basecolor.cw == -1)_basecolor.cw = current.cw;
 	}
+
+	// Fill in the "blanks" in _finalcolor with the respective values from _basecolor
+	if(_finalcolor.r == -1)_finalcolor.r = _basecolor.r;
+	if(_finalcolor.g == -1)_finalcolor.g = _basecolor.g;
+	if(_finalcolor.b == -1)_finalcolor.b = _basecolor.b;
+	if(_finalcolor.ww == -1)_finalcolor.ww = _basecolor.ww;
+	if(_finalcolor.cw == -1)_finalcolor.cw = _basecolor.cw;
+
 
 	// don`t animate if the color is already the same
 	if (_basecolor.r == _finalcolor.r && _basecolor.g == _finalcolor.g && _basecolor.b == _finalcolor.b &&
